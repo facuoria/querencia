@@ -29,6 +29,7 @@ import { showStartScreen } from './ui/startScreen';
 import { CursorLabel, Toast } from './ui/toast';
 import { Toolbar } from './ui/toolbar';
 import { TopBar, formatMoney } from './ui/topBar';
+import './ui/theme.css';
 import './ui/styles.css';
 
 /** Tope de tiempo por cuadro, para que volver a una pestaña inactiva no adelante días de golpe. */

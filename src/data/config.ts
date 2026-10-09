@@ -257,7 +257,8 @@ export const TIME = {
 } as const;
 
 export const COLORS = {
-  background: 0x1b2430,
+  /** Fondo del canvas fuera del mapa: papel (coincide con --paper-sunken del tema). */
+  background: 0xebe6da,
   gridLine: 0x000000,
   gridLineAlpha: 0.12,
   /** Tinte que oscurece los sectores bloqueados. */
@@ -266,7 +267,7 @@ export const COLORS = {
   blackoutTint: 0x6f7a99,
   sectorBuyable: 0x4fd16b,
   sectorBlocked: 0xff5a4f,
-  unlockedBorder: 0xfff3c4,
+  unlockedBorder: 0x2d5b87,
   hoverValid: 0xffffff,
   hoverLocked: 0xff5a4f,
   previewBuild: 0x4fd16b,
