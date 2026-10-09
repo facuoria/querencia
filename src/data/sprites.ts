@@ -152,5 +152,23 @@ export const CAR_MODELS = ['Black', 'Blue', 'Green', 'Red', 'Silver'].flatMap((c
   [1, 2, 3, 4, 5, 6].map((n) => `car${color}${n}`),
 );
 
-/** Cuadro de cada dirección. +x va abajo a la derecha (SE), +y abajo a la izquierda (SW). */
-export const CAR_FRAMES = { NE: '003', NW: '001', SE: '014', SW: '010' } as const;
+export type CarDirection = 'NE' | 'NW' | 'SE' | 'SW';
+
+/**
+ * Cómo encontrar los cuadros de calle plana de cada auto civil. Vienen numerados (000 a 015) sin
+ * nombre de dirección, y cada modelo y color arranca la secuencia en otro punto. Lo que se repite en
+ * todos: hay dos vistas angostas (de frente y de atrás) separadas por 10 cuadros. Si F es la primera,
+ * los cuadros planos son F-1 (NW), F+1 (NE), F+5 (SW) y F+6 (SE). Se comprobó contra el taxi y la
+ * ambulancia, que sí traen nombres. Los demás cuadros son de costado o en pendiente y sobre una calle
+ * plana se ven deformados. +x va abajo a la derecha (SE) y +y abajo a la izquierda (SW).
+ */
+export const CAR_FRAME_RULE = {
+  /** Ancho máximo, en píxeles, de una vista de frente o de atrás. */
+  narrowWidth: 18,
+  /** Distancia entre las dos vistas angostas. */
+  narrowGap: 10,
+  offsets: { NW: -1, NE: 1, SW: 5, SE: 6 } as Record<CarDirection, number>,
+} as const;
+
+/** Punto del sprite del auto que se apoya sobre la calle (centro, a la altura de las ruedas). */
+export const CAR_ANCHOR = { x: 0.5, y: 0.82 } as const;

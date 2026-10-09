@@ -81,6 +81,12 @@ async function start(): Promise<void> {
     resolution: window.devicePixelRatio || 1,
   });
   host.appendChild(app.canvas);
+  // Vista de prueba de vehículos, solo en desarrollo: ?prueba=vehiculos
+  if (import.meta.env.DEV && new URLSearchParams(location.search).get('prueba') === 'vehiculos') {
+    const { runVehicleTest } = await import('./dev/vehicleTest');
+    await runVehicleTest(app);
+    return;
+  }
   // Los sprites se cargan mientras el jugador mira la pantalla de inicio.
   const assets = loadAssets();
   const choice = await showStartScreen(saveSummary());

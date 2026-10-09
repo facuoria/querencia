@@ -226,7 +226,8 @@ export const TRAFFIC = {
   /** Desplazamiento desde el centro de la calle, en casillas: carril y vereda. */
   laneOffset: 0.17,
   sidewalkOffset: 0.4,
-  carScale: 1.15,
+  /** Los autos de Kenney están dibujados para casillas de 132 px: se usan a escala 1. */
+  carScale: 1,
   /** Con el zoom más alejado que esto no se dibujan (no se distinguen y cuestan). */
   minZoom: 0.3,
   pedestrianColors: [0xe05a47, 0x3b7dd8, 0xf2c53d, 0x5fbf5f, 0xa66bd6, 0xf08c3a, 0x3a3a3a, 0xeeeeee],

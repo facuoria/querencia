@@ -2,7 +2,7 @@ import { Container, Graphics, GraphicsContext, Sprite } from 'pixi.js';
 import type { CityState } from '../core/cityState';
 import { Road } from '../core/types';
 import { TRAFFIC } from '../data/config';
-import { CAR_FRAMES, CAR_MODELS } from '../data/sprites';
+import { CAR_ANCHOR, CAR_FRAME_RULE, CAR_MODELS, type CarDirection } from '../data/sprites';
 import type { RoadNetwork } from '../sim/network';
 import { tex } from './assets';
 import { tileToWorld } from './iso';
@@ -30,11 +30,61 @@ const DIRS = [
   [0, -1],
 ] as const;
 
-function frameFor(dx: number, dy: number): keyof typeof CAR_FRAMES {
+/** Dirección isométrica según hacia dónde avanza en la grilla. */
+export function frameFor(dx: number, dy: number): CarDirection {
   if (dx > 0) return 'SE';
   if (dx < 0) return 'NW';
   if (dy > 0) return 'SW';
   return 'NE';
+}
+
+/** Nombre del cuadro del auto según su modelo y hacia dónde avanza. */
+export function carFrame(model: string, dx: number, dy: number): string {
+  return `${model}_${carFrames(model)[frameFor(dx, dy)]}.png`;
+}
+
+const frameCache = new Map<string, Record<CarDirection, string>>();
+const pad = (i: number): string => String(((i % 16) + 16) % 16).padStart(3, '0');
+
+/** Cuadros de calle plana de un modelo, buscados con CAR_FRAME_RULE en el atlas ya cargado. */
+export function carFrames(model: string): Record<CarDirection, string> {
+  let frames = frameCache.get(model);
+  if (frames) return frames;
+  const rule = CAR_FRAME_RULE;
+  const narrow = (i: number): boolean => tex(`${model}_${pad(i)}.png`).frame.width <= rule.narrowWidth;
+  let first = 0;
+  for (let i = 0; i < 16; i++) {
+    if (narrow(i) && narrow(i + rule.narrowGap)) {
+      first = i;
+      break;
+    }
+  }
+  frames = {
+    NW: pad(first + rule.offsets.NW),
+    NE: pad(first + rule.offsets.NE),
+    SW: pad(first + rule.offsets.SW),
+    SE: pad(first + rule.offsets.SE),
+  };
+  frameCache.set(model, frames);
+  return frames;
+}
+
+/**
+ * Punto del mundo de algo que va de la casilla (x, y) a (nx, ny), con avance t (0 a 1) y
+ * corrido "offset" casillas a la derecha del sentido de marcha (carril o vereda).
+ */
+export function travelPoint(
+  x: number,
+  y: number,
+  nx: number,
+  ny: number,
+  t: number,
+  offset: number,
+): { x: number; y: number } {
+  const dx = nx - x;
+  const dy = ny - y;
+  // A la derecha del sentido de marcha: (-dy, dx) en coordenadas de casilla.
+  return tileToWorld(x + 0.5 + dx * t - dy * offset, y + 0.5 + dy * t + dx * offset);
 }
 
 /**
@@ -142,7 +192,7 @@ export class Traffic {
         model,
       };
       if (car) {
-        (view as Sprite).anchor.set(0.5, 0.75);
+        (view as Sprite).anchor.set(CAR_ANCHOR.x, CAR_ANCHOR.y);
         view.scale.set(TRAFFIC.carScale);
         this.setCarFrame(a);
       }
@@ -178,8 +228,7 @@ export class Traffic {
   }
 
   private setCarFrame(a: Agent): void {
-    const frame = CAR_FRAMES[frameFor(a.nx - a.x, a.ny - a.y)];
-    (a.view as Sprite).texture = tex(`${a.model}_${frame}.png`);
+    (a.view as Sprite).texture = tex(carFrame(a.model, a.nx - a.x, a.ny - a.y));
   }
 
   /** Se dibuja en la banda de la casilla más adelantada de las dos, para quedar delante de ambas. */
@@ -190,14 +239,7 @@ export class Traffic {
   }
 
   private place(a: Agent): void {
-    const dx = a.nx - a.x;
-    const dy = a.ny - a.y;
-    // A la derecha del sentido de marcha: (-dy, dx) en coordenadas de casilla.
-    const ox = -dy * a.offset;
-    const oy = dx * a.offset;
-    const tx = a.x + 0.5 + dx * a.t + ox;
-    const ty = a.y + 0.5 + dy * a.t + oy;
-    const p = tileToWorld(tx, ty);
+    const p = travelPoint(a.x, a.y, a.nx, a.ny, a.t, a.offset);
     a.view.position.set(p.x, p.y);
   }
 }
