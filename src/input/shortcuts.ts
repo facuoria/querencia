@@ -25,6 +25,15 @@ export function installShortcuts(tools: ToolController, clock: GameClock): void 
       case 'KeyR':
         tools.setTool(Tool.Road);
         break;
+      case 'KeyZ':
+        tools.setTool(Tool.Residential);
+        break;
+      case 'KeyX':
+        tools.setTool(Tool.Commercial);
+        break;
+      case 'KeyC':
+        tools.setTool(Tool.Industrial);
+        break;
       case 'KeyB':
         tools.setTool(Tool.Demolish);
         break;

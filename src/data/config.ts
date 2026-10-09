@@ -54,8 +54,73 @@ export const COSTS = {
   road: 10,
   /** Extra por talar un bosque al construir encima. */
   clearForest: 5,
+  /** Por casilla zonificada. */
+  zone: 5,
   /** Parte del costo de construcción que se devuelve al demoler. Talar bosque es gratis. */
   demolishRefund: 0.5,
+} as const;
+
+export const GROWTH = {
+  /** Multiplicador general de la velocidad de crecimiento. Se calibra jugando. */
+  speed: 1,
+  /** Distancia máxima (en casillas, sin diagonales) entre un lote y una calle conectada a la autopista. */
+  accessDistance: 3,
+  /** Intentos de crecimiento por día y por tipo de zona, con demanda máxima. */
+  attemptsPerDay: 6,
+  /** Probabilidad de que un intento sobre un lote vacío construya un edificio, con demanda máxima. */
+  buildChance: 0.6,
+  /** Probabilidad de que un intento sobre un edificio lo suba de nivel, con demanda máxima. */
+  upgradeChance: 0.25,
+  /** Probabilidad diaria de que un edificio sin acceso baje un nivel. */
+  decayWithoutAccess: 0.05,
+  /** Con demanda por debajo de este valor, los edificios pueden bajar de nivel. */
+  decayDemand: -0.4,
+  decayChance: 0.02,
+  /** Valor del suelo mínimo para cada nivel (índice = nivel). */
+  landValueForLevel: [0, 0, 0.3, 0.55],
+  /** Población de la ciudad necesaria para que aparezca el nivel 3 (hito "Ciudad"). */
+  level3MinPopulation: 10000,
+} as const;
+
+/** Habitantes (residencial) o empleos (comercial e industrial) por edificio, según nivel. */
+export const CAPACITY = {
+  residential: [0, 6, 24, 90],
+  commercial: [0, 4, 14, 50],
+  industrial: [0, 10, 24, 60],
+} as const;
+
+export const DEMAND = {
+  /** Parte de los habitantes que trabaja. */
+  workerRatio: 0.5,
+  /** Empleos disponibles afuera de la ciudad, por la autopista. Arrancan la demanda residencial. */
+  externalJobs: 40,
+  /** Cuánta gente de más acepta venir aunque no haya empleo para todos (0.15 = 15%). */
+  residentialSlack: 0.15,
+  /** Empleos comerciales que pide cada habitante. */
+  commercialPerResident: 0.2,
+  /** Empleos industriales que pide cada habitante. */
+  industrialPerResident: 0.32,
+  /** Demanda base de comercio e industria cuando la ciudad está vacía. */
+  baseCommercial: 6,
+  baseIndustrial: 12,
+  /** Escala para pasar de diferencia (objetivo - actual) a demanda entre -1 y 1. */
+  scaleMin: 30,
+  scaleRatio: 0.35,
+} as const;
+
+export const LAND_VALUE = {
+  base: 0.25,
+  /** Bonus por agua y bosque cerca (radio en casillas). */
+  waterRadius: 4,
+  waterBonus: 0.2,
+  forestRadius: 3,
+  forestBonus: 0.15,
+  /** Penalización por industria cerca, para residencial y comercial. */
+  industryRadius: 5,
+  industryPenalty: 0.35,
+  /** Bonus por estar rodeado de edificios de nivel alto. */
+  neighborhoodRadius: 3,
+  neighborhoodBonus: 0.3,
 } as const;
 
 export const TIME = {
@@ -81,5 +146,9 @@ export const COLORS = {
   previewExisting: 0xcfd8e3,
   previewInvalid: 0xff5a4f,
   previewDemolish: 0xffa23a,
+  zoneResidential: 0x5fd35f,
+  zoneCommercial: 0x4f9bff,
+  zoneIndustrial: 0xf2c53d,
+  zoneAlpha: 0.45,
   treeTints: [0xffffff, 0xe3eed6, 0xc9dbb6, 0xf2f7d8],
 } as const;

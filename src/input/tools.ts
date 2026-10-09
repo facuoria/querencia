@@ -1,11 +1,13 @@
 import type { CityState } from '../core/cityState';
-import type { TileCoord } from '../core/types';
+import { Zone, type TileCoord } from '../core/types';
 import {
+  applyZone,
   buildRoad,
   demolish,
   lPath,
   planDemolish,
   planRoad,
+  planZone,
   rectArea,
   type Plan,
 } from '../sim/construction';
@@ -13,13 +15,22 @@ import {
 export const Tool = {
   Select: 'select',
   Road: 'road',
+  Residential: 'residential',
+  Commercial: 'commercial',
+  Industrial: 'industrial',
   Demolish: 'demolish',
 } as const;
 export type Tool = (typeof Tool)[keyof typeof Tool];
 
+const ZONE_OF_TOOL: Partial<Record<Tool, Zone>> = {
+  [Tool.Residential]: Zone.Residential,
+  [Tool.Commercial]: Zone.Commercial,
+  [Tool.Industrial]: Zone.Industrial,
+};
+
 /**
  * Herramientas de construcción con el clic izquierdo.
- * Carretera: arrastrar traza un recorrido en L. Demoler: arrastrar marca un rectángulo.
+ * Carretera: arrastrar traza un recorrido en L. Zonas y demoler: arrastrar marca un rectángulo.
  */
 export class ToolController {
   tool: Tool = Tool.Select;
@@ -32,6 +43,7 @@ export class ToolController {
     canvas: HTMLCanvasElement,
     private readonly state: CityState,
     private readonly onError: (message: string) => void,
+    private readonly onChange: () => void,
   ) {
     canvas.addEventListener('pointerdown', (e) => {
       if (e.button === 0) this.begin();
@@ -45,6 +57,11 @@ export class ToolController {
   setTool(tool: Tool): void {
     this.tool = tool;
     this.cancel();
+  }
+
+  /** Zona que pinta la herramienta actual, si es una herramienta de zonas. */
+  get zone(): Zone | null {
+    return ZONE_OF_TOOL[this.tool] ?? null;
   }
 
   /** Se llama una vez por cuadro con la casilla bajo el cursor. */
@@ -68,13 +85,21 @@ export class ToolController {
     const plan = this.plan;
     this.cancel();
     if (!plan) return;
-    const error = this.tool === Tool.Road ? buildRoad(this.state, plan) : demolish(this.state, plan);
+    const zone = this.zone;
+    const error =
+      this.tool === Tool.Road
+        ? buildRoad(this.state, plan)
+        : zone !== null
+          ? applyZone(this.state, plan, zone)
+          : demolish(this.state, plan);
     if (error) this.onError(error);
+    else this.onChange();
   }
 
   private makePlan(from: TileCoord, to: TileCoord): Plan {
-    return this.tool === Tool.Road
-      ? planRoad(this.state, lPath(from, to))
-      : planDemolish(this.state, rectArea(from, to));
+    if (this.tool === Tool.Road) return planRoad(this.state, lPath(from, to));
+    const zone = this.zone;
+    if (zone !== null) return planZone(this.state, rectArea(from, to), zone);
+    return planDemolish(this.state, rectArea(from, to));
   }
 }

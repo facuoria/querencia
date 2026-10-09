@@ -1,6 +1,7 @@
 import type { CityState } from '../core/cityState';
-import { Road, Terrain, type TileCoord } from '../core/types';
+import { Road, Terrain, Zone, type TileCoord } from '../core/types';
 import { TEXTS } from '../data/texts';
+import { capacityOf, type GrowthSim } from '../sim/growth';
 
 const TERRAIN_NAMES: Record<Terrain, string> = {
   [Terrain.Grass]: TEXTS.terrain.grass,
@@ -8,12 +9,23 @@ const TERRAIN_NAMES: Record<Terrain, string> = {
   [Terrain.Forest]: TEXTS.terrain.forest,
 };
 
-/** Panel de información en HTML encima del canvas. Solo lee el estado. */
+const ZONE_NAMES: Record<Zone, string> = {
+  [Zone.None]: '',
+  [Zone.Residential]: TEXTS.zones.residential,
+  [Zone.Commercial]: TEXTS.zones.commercial,
+  [Zone.Industrial]: TEXTS.zones.industrial,
+};
+
+/** Panel de información de la casilla bajo el cursor. Solo lee el estado. */
 export class Hud {
   private readonly info: HTMLDivElement;
   private lastText = '';
 
-  constructor(parent: HTMLElement, private readonly state: CityState) {
+  constructor(
+    parent: HTMLElement,
+    private readonly state: CityState,
+    private readonly growth: GrowthSim,
+  ) {
     const panel = document.createElement('div');
     panel.className = 'hud-panel hud-info';
     const title = document.createElement('h1');
@@ -33,20 +45,35 @@ export class Hud {
 
   update(tile: TileCoord | null, zoom: number, fps: number): void {
     const h = TEXTS.hud;
+    const z = TEXTS.zones;
+    const st = this.state;
     const lines: string[] = [];
     if (tile) {
-      const sector = this.state.sectorOf(tile.x, tile.y);
-      const locked = !this.state.isSectorUnlocked(sector.x, sector.y);
-      const road = this.state.getRoad(tile.x, tile.y);
-      const what =
-        road === Road.Highway
-          ? TEXTS.road.highway
-          : road === Road.Street
-            ? TEXTS.road.street
-            : TERRAIN_NAMES[this.state.getTerrain(tile.x, tile.y)];
-      lines.push(`${h.tile}: ${tile.x}, ${tile.y}`);
-      lines.push(`${h.terrain}: ${what}`);
-      lines.push(`${h.sector}: ${sector.x}, ${sector.y} (${locked ? h.locked : h.unlocked})`);
+      const { x, y } = tile;
+      const sector = st.sectorOf(x, y);
+      const locked = !st.isSectorUnlocked(sector.x, sector.y);
+      const road = st.getRoad(x, y);
+      const zone = st.getZone(x, y);
+      const level = st.getLevel(x, y);
+      lines.push(`${h.tile}: ${x}, ${y}`);
+      if (road === Road.Highway) lines.push(TEXTS.road.highway);
+      else if (road === Road.Street) lines.push(TEXTS.road.street);
+      else if (zone !== Zone.None) {
+        if (level === 0) lines.push(`${ZONE_NAMES[zone]} · ${z.emptyLot}`);
+        else {
+          const cap = capacityOf(zone, level);
+          const unit = zone === Zone.Residential ? z.residents : z.jobs;
+          lines.push(`${ZONE_NAMES[zone]} · ${z.level} ${level} · ${cap} ${unit}`);
+        }
+        if (!this.growth.network.hasAccess(x, y)) lines.push(`⚠ ${z.noAccess}`);
+        lines.push(`${z.landValue}: ${Math.round(this.growth.landValue[st.index(x, y)]! * 100)}%`);
+      } else lines.push(`${h.terrain}: ${TERRAIN_NAMES[st.getTerrain(x, y)]}`);
+      const pop = Math.round(st.sectorPopulation[sector.y * st.sectorsPerSide + sector.x]!);
+      lines.push(
+        locked
+          ? `${h.sector} ${sector.x}, ${sector.y} (${h.locked})`
+          : `${TEXTS.stats.neighborhood} ${sector.x}, ${sector.y}: ${pop.toLocaleString('es-AR')} ${z.residents}`,
+      );
     } else {
       lines.push(h.noTile);
     }

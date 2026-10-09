@@ -1,64 +1,83 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, GraphicsContext, Sprite } from 'pixi.js';
 import type { CityState } from '../core/cityState';
 import { hash2 } from '../core/noise';
-import { Road, Terrain } from '../core/types';
+import { Road, Terrain, Zone } from '../core/types';
 import { COLORS } from '../data/config';
 import { HIGHWAY_SPRITES, ROAD_SPRITES, SPRITE_ORIGIN, TERRAIN_SPRITES, TREE_SPRITE } from '../data/sprites';
 import { roadMask } from '../sim/roads';
 import { tex } from './assets';
+import { createBuilding } from './buildingView';
 import type { ViewRect } from './camera';
-import { HALF_H, HALF_W, tileToWorld } from './iso';
+import { HALF_H, HALF_W, tileDiamond, tileToWorld } from './iso';
 
-/** Margen para que los árboles y el espesor de las casillas no se corten antes de salir de pantalla. */
-const MARGIN_TOP = 80;
-const MARGIN_BOTTOM = 40;
+/** Ancho de cada banda, medido en casillas a lo largo de la diagonal. */
+const BAND_WIDTH = 16;
+/** Margen hacia arriba para que los edificios altos no se corten antes de salir de pantalla. */
+const MARGIN_TOP = 520;
+const MARGIN_BOTTOM = 60;
 
-interface Chunk {
-  sx: number;
-  sy: number;
-  ground: Container;
-  objects: Container;
-  grid: Graphics;
-  /** Sprite de cada casilla del sector, indexado por y local * tamaño + x local. */
-  tiles: Sprite[];
+interface Band {
+  container: Container;
   bounds: ViewRect;
 }
 
 function pick(list: readonly string[], x: number, y: number, salt: number): string {
-  const i = Math.floor(hash2(x, y, salt) * list.length);
-  return list[i] ?? list[0]!;
+  return list[Math.floor(hash2(x, y, salt) * list.length)] ?? list[0]!;
 }
 
 /**
- * Dibuja el terreno y las calles por sectores. Solo se muestran los sectores
- * que intersectan la pantalla.
+ * Dibuja terreno, calles, árboles y edificios en el orden correcto de profundidad.
+ * Las casillas se agrupan en bandas diagonales (misma x + y) y cada banda se divide
+ * en tramos; solo se muestran los tramos que se ven en pantalla.
  */
 export class MapRenderer {
-  readonly groundLayer = new Container();
-  readonly gridLayer = new Container();
-  readonly objectLayer = new Container();
-  /** Contorno de la zona desbloqueada. */
+  /** Terreno, calles, zonas, árboles y edificios. */
+  readonly layer = new Container();
+  /** Grilla (solo con una herramienta activa) y contorno de la zona desbloqueada. */
+  readonly gridLayer = new Graphics();
   readonly borderLayer = new Graphics();
-  private readonly chunks: Chunk[] = [];
-  private readonly chunkByIndex: Chunk[] = [];
+  private readonly bands: Band[] = [];
+  /** Contenedor de cada casilla, por índice. */
+  private readonly tiles: Container[] = [];
+  private readonly zoneMarks: Record<number, GraphicsContext> = {};
 
   constructor(private readonly state: CityState) {
-    const n = state.sectorsPerSide;
-    // Orden por profundidad isométrica: los sectores de atrás primero.
-    const order: Array<[number, number]> = [];
-    for (let sy = 0; sy < n; sy++) for (let sx = 0; sx < n; sx++) order.push([sx, sy]);
-    order.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
-
-    for (const [sx, sy] of order) {
-      const chunk = this.createChunk(sx, sy);
-      this.groundLayer.addChild(chunk.ground);
-      this.gridLayer.addChild(chunk.grid);
-      this.objectLayer.addChild(chunk.objects);
-      this.chunks.push(chunk);
-      this.chunkByIndex[sy * n + sx] = chunk;
+    const n = state.size;
+    for (const [zone, color] of [
+      [Zone.Residential, COLORS.zoneResidential],
+      [Zone.Commercial, COLORS.zoneCommercial],
+      [Zone.Industrial, COLORS.zoneIndustrial],
+    ] as const) {
+      this.zoneMarks[zone] = new GraphicsContext()
+        .poly(tileDiamond(0, 0))
+        .fill({ color, alpha: COLORS.zoneAlpha })
+        .poly(tileDiamond(0, 0).map((v, i) => (i % 2 === 0 ? v * 0.8 : v * 0.8 + HALF_H * 0.2)))
+        .stroke({ width: 2, color, alpha: 0.9 });
     }
-    this.gridLayer.visible = false;
+
+    const segments = Math.ceil((2 * n - 1) / BAND_WIDTH);
+    const bandIndex = new Map<number, Band>();
+    for (let d = 0; d <= 2 * (n - 1); d++) {
+      for (let seg = 0; seg < segments; seg++) {
+        const band: Band = { container: new Container(), bounds: this.bandBounds(d, seg) };
+        bandIndex.set(d * segments + seg, band);
+        this.bands.push(band);
+        this.layer.addChild(band.container);
+      }
+    }
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const seg = Math.floor((x - y + n - 1) / BAND_WIDTH);
+        const band = bandIndex.get((x + y) * segments + seg)!;
+        const c = new Container();
+        band.container.addChild(c);
+        this.tiles[y * n + x] = c;
+        this.buildTile(x, y);
+      }
+    }
+    this.drawGrid();
     this.drawBorder();
+    this.gridLayer.visible = false;
   }
 
   set gridVisible(v: boolean) {
@@ -67,86 +86,57 @@ export class MapRenderer {
 
   /** Aplica los cambios del estado desde el último cuadro. */
   sync(): void {
-    const changes = this.state.takeChanges();
-    if (changes.length === 0) return;
-    const touched = new Set<Chunk>();
-    for (const idx of changes) {
+    for (const idx of this.state.takeChanges()) {
       const x = idx % this.state.size;
-      const y = Math.floor(idx / this.state.size);
-      const chunk = this.chunkAt(x, y);
-      this.updateTile(chunk, x, y);
-      touched.add(chunk);
+      this.buildTile(x, (idx - x) / this.state.size);
     }
-    for (const c of touched) this.buildObjects(c);
   }
 
   /** Vuelve a dibujar un sector entero, por ejemplo al desbloquearlo. */
   rebuildSector(sx: number, sy: number): void {
-    const chunk = this.chunkByIndex[sy * this.state.sectorsPerSide + sx];
-    if (!chunk) return;
     const s = this.state.sectorSize;
-    for (let ly = 0; ly < s; ly++) for (let lx = 0; lx < s; lx++) this.updateTile(chunk, sx * s + lx, sy * s + ly);
-    this.buildObjects(chunk);
+    for (let y = sy * s; y < (sy + 1) * s; y++) for (let x = sx * s; x < (sx + 1) * s; x++) this.buildTile(x, y);
     this.drawBorder();
   }
 
-  /** Muestra solo los sectores que se ven en pantalla. Devuelve cuántos quedaron visibles. */
+  /** Muestra solo los tramos que se ven en pantalla. Devuelve cuántos quedaron visibles. */
   cull(view: ViewRect): number {
     let visible = 0;
-    for (const c of this.chunks) {
-      const b = c.bounds;
+    for (const band of this.bands) {
+      const b = band.bounds;
       const on = b.right >= view.left && b.left <= view.right && b.bottom >= view.top && b.top <= view.bottom;
-      c.ground.visible = on;
-      c.objects.visible = on;
-      c.grid.visible = on;
+      band.container.visible = on;
       if (on) visible++;
     }
     return visible;
   }
 
-  private chunkAt(x: number, y: number): Chunk {
-    const s = this.state.sectorSize;
-    return this.chunkByIndex[Math.floor(y / s) * this.state.sectorsPerSide + Math.floor(x / s)]!;
-  }
+  private buildTile(x: number, y: number): void {
+    const st = this.state;
+    const c = this.tiles[y * st.size + x]!;
+    for (const child of c.removeChildren()) child.destroy({ children: true });
+    c.tint = st.isTileUnlocked(x, y) ? 0xffffff : COLORS.lockedTint;
 
-  private createChunk(sx: number, sy: number): Chunk {
-    const s = this.state.sectorSize;
-    const x0 = sx * s;
-    const y0 = sy * s;
-    const chunk: Chunk = {
-      sx,
-      sy,
-      ground: new Container(),
-      objects: new Container(),
-      grid: new Graphics(),
-      tiles: new Array<Sprite>(s * s),
-      bounds: this.sectorBounds(sx, sy),
-    };
-    // Se agregan por diagonales para que las casillas de adelante tapen el espesor de las de atrás.
-    for (let d = 0; d <= 2 * (s - 1); d++) {
-      for (let lx = Math.max(0, d - (s - 1)); lx <= Math.min(d, s - 1); lx++) {
-        const ly = d - lx;
-        const sprite = new Sprite();
-        const p = tileToWorld(x0 + lx, y0 + ly);
-        sprite.position.set(p.x - SPRITE_ORIGIN.x, p.y - SPRITE_ORIGIN.y);
-        chunk.tiles[ly * s + lx] = sprite;
-        chunk.ground.addChild(sprite);
-      }
+    const top = tileToWorld(x, y);
+    const ground = new Sprite(tex(this.groundSprite(x, y)));
+    ground.position.set(top.x - SPRITE_ORIGIN.x, top.y - SPRITE_ORIGIN.y);
+    c.addChild(ground);
+
+    const zone = st.getZone(x, y);
+    const level = st.getLevel(x, y);
+    if (zone !== Zone.None && level === 0) {
+      const mark = new Graphics(this.zoneMarks[zone]);
+      mark.position.set(top.x, top.y);
+      c.addChild(mark);
     }
-    for (let ly = 0; ly < s; ly++) for (let lx = 0; lx < s; lx++) this.updateTile(chunk, x0 + lx, y0 + ly);
-    this.buildObjects(chunk);
-    this.drawGrid(chunk);
-    return chunk;
+    if (level > 0) {
+      c.addChild(createBuilding(zone, level, x, y));
+      return;
+    }
+    if (st.getTerrain(x, y) === Terrain.Forest && st.getRoad(x, y) === Road.None) this.addTrees(c, x, y);
   }
 
-  private updateTile(chunk: Chunk, x: number, y: number): void {
-    const s = this.state.sectorSize;
-    const sprite = chunk.tiles[(y - chunk.sy * s) * s + (x - chunk.sx * s)]!;
-    sprite.texture = tex(this.tileSpriteName(x, y));
-    sprite.tint = this.state.isSectorUnlocked(chunk.sx, chunk.sy) ? 0xffffff : COLORS.lockedTint;
-  }
-
-  private tileSpriteName(x: number, y: number): string {
+  private groundSprite(x: number, y: number): string {
     const road = this.state.getRoad(x, y);
     if (road !== Road.None) {
       const mask = roadMask(this.state, x, y);
@@ -160,50 +150,42 @@ export class MapRenderer {
     return pick(TERRAIN_SPRITES.grass, x, y, 13);
   }
 
-  /** Árboles del sector, ordenados de atrás hacia adelante. */
-  private buildObjects(chunk: Chunk): void {
-    for (const child of chunk.objects.removeChildren()) child.destroy();
-    const state = this.state;
-    const s = state.sectorSize;
-    const x0 = chunk.sx * s;
-    const y0 = chunk.sy * s;
-    const tint = state.isSectorUnlocked(chunk.sx, chunk.sy) ? null : COLORS.lockedTint;
-    const trees: Array<{ x: number; y: number; depth: number; tint: number; scale: number }> = [];
-
-    for (let ly = 0; ly < s; ly++) {
-      for (let lx = 0; lx < s; lx++) {
-        const x = x0 + lx;
-        const y = y0 + ly;
-        if (state.getTerrain(x, y) !== Terrain.Forest || state.getRoad(x, y) !== Road.None) continue;
-        const center = tileToWorld(x + 0.5, y + 0.5);
-        const count = 2 + Math.floor(hash2(x, y, 21) * 3);
-        for (let i = 0; i < count; i++) {
-          // Posición al azar dentro del rombo, en coordenadas de casilla.
-          const u = 0.15 + hash2(x, y, 30 + i) * 0.7 - 0.5;
-          const v = 0.15 + hash2(x, y, 40 + i) * 0.7 - 0.5;
-          const px = center.x + (u - v) * HALF_W;
-          const py = center.y + (u + v) * HALF_H;
-          const tints = COLORS.treeTints;
-          trees.push({
-            x: px,
-            y: py,
-            depth: py,
-            tint: tint ?? tints[Math.floor(hash2(x, y, 60 + i) * tints.length)] ?? 0xffffff,
-            scale: 0.9 + hash2(x, y, 50 + i) * 0.5,
-          });
-        }
-      }
+  /** Árboles de una casilla de bosque, ordenados de atrás hacia adelante. */
+  private addTrees(c: Container, x: number, y: number): void {
+    const center = tileToWorld(x + 0.5, y + 0.5);
+    const count = 2 + Math.floor(hash2(x, y, 21) * 3);
+    const trees: Array<{ px: number; py: number; i: number }> = [];
+    for (let i = 0; i < count; i++) {
+      // Posición al azar dentro del rombo, en coordenadas de casilla.
+      const u = 0.15 + hash2(x, y, 30 + i) * 0.7 - 0.5;
+      const v = 0.15 + hash2(x, y, 40 + i) * 0.7 - 0.5;
+      trees.push({ px: center.x + (u - v) * HALF_W, py: center.y + (u + v) * HALF_H, i });
     }
-    trees.sort((a, b) => a.depth - b.depth);
+    trees.sort((a, b) => a.py - b.py);
     const texture = tex(TREE_SPRITE);
+    const tints = COLORS.treeTints;
     for (const t of trees) {
       const sp = new Sprite(texture);
       sp.anchor.set(0.5, 0.95);
-      sp.position.set(t.x, t.y);
-      sp.scale.set(t.scale);
-      sp.tint = t.tint;
-      chunk.objects.addChild(sp);
+      sp.position.set(t.px, t.py);
+      sp.scale.set(0.9 + hash2(x, y, 50 + t.i) * 0.5);
+      sp.tint = tints[Math.floor(hash2(x, y, 60 + t.i) * tints.length)] ?? 0xffffff;
+      c.addChild(sp);
     }
+  }
+
+  private drawGrid(): void {
+    const g = this.gridLayer;
+    const n = this.state.size;
+    for (let i = 0; i <= n; i++) {
+      const a = tileToWorld(i, 0);
+      const b = tileToWorld(i, n);
+      g.moveTo(a.x, a.y).lineTo(b.x, b.y);
+      const c = tileToWorld(0, i);
+      const e = tileToWorld(n, i);
+      g.moveTo(c.x, c.y).lineTo(e.x, e.y);
+    }
+    g.stroke({ width: 1, color: COLORS.gridLine, alpha: COLORS.gridLineAlpha });
   }
 
   private drawBorder(): void {
@@ -211,7 +193,8 @@ export class MapRenderer {
     const st = this.state;
     const n = st.sectorsPerSide;
     const s = st.sectorSize;
-    const open = (sx: number, sy: number): boolean => sx >= 0 && sy >= 0 && sx < n && sy < n && st.isSectorUnlocked(sx, sy);
+    const open = (sx: number, sy: number): boolean =>
+      sx >= 0 && sy >= 0 && sx < n && sy < n && st.isSectorUnlocked(sx, sy);
     const line = (ax: number, ay: number, bx: number, by: number): void => {
       const a = tileToWorld(ax * s, ay * s);
       const b = tileToWorld(bx * s, by * s);
@@ -230,31 +213,15 @@ export class MapRenderer {
     g.stroke({ width: 4, color: COLORS.unlockedBorder, alpha: 0.8 });
   }
 
-  private drawGrid(chunk: Chunk): void {
-    const g = chunk.grid;
-    const s = this.state.sectorSize;
-    const x0 = chunk.sx * s;
-    const y0 = chunk.sy * s;
-    g.clear();
-    for (let i = 0; i <= s; i++) {
-      const a = tileToWorld(x0 + i, y0);
-      const b = tileToWorld(x0 + i, y0 + s);
-      g.moveTo(a.x, a.y).lineTo(b.x, b.y);
-      const c = tileToWorld(x0, y0 + i);
-      const e = tileToWorld(x0 + s, y0 + i);
-      g.moveTo(c.x, c.y).lineTo(e.x, e.y);
-    }
-    g.stroke({ width: 1, color: COLORS.gridLine, alpha: COLORS.gridLineAlpha });
-  }
-
-  private sectorBounds(sx: number, sy: number): ViewRect {
-    const s = this.state.sectorSize;
-    const x0 = sx * s;
-    const y0 = sy * s;
-    const top = tileToWorld(x0, y0);
-    const right = tileToWorld(x0 + s, y0);
-    const bottom = tileToWorld(x0 + s, y0 + s);
-    const left = tileToWorld(x0, y0 + s);
-    return { left: left.x, right: right.x, top: top.y - MARGIN_TOP, bottom: bottom.y + MARGIN_BOTTOM };
+  private bandBounds(d: number, seg: number): ViewRect {
+    const n = this.state.size;
+    const xmyMin = seg * BAND_WIDTH - (n - 1);
+    const xmyMax = xmyMin + BAND_WIDTH - 1;
+    return {
+      left: xmyMin * HALF_W - HALF_W,
+      right: xmyMax * HALF_W + HALF_W,
+      top: d * HALF_H - MARGIN_TOP,
+      bottom: d * HALF_H + 2 * HALF_H + MARGIN_BOTTOM,
+    };
   }
 }

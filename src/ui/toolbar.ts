@@ -3,9 +3,12 @@ import { TEXTS } from '../data/texts';
 import { Tool, type ToolController } from '../input/tools';
 import { formatMoney } from './topBar';
 
-const BUTTONS: Array<{ tool: Tool; label: string; key: string; cost?: string }> = [
+const BUTTONS: Array<{ tool: Tool; label: string; key: string; cost?: string; zone?: string }> = [
   { tool: Tool.Select, label: TEXTS.tools.select, key: 'Esc' },
   { tool: Tool.Road, label: TEXTS.tools.road, key: 'R', cost: formatMoney(COSTS.road) },
+  { tool: Tool.Residential, label: TEXTS.tools.residential, key: 'Z', cost: formatMoney(COSTS.zone), zone: 'res' },
+  { tool: Tool.Commercial, label: TEXTS.tools.commercial, key: 'X', cost: formatMoney(COSTS.zone), zone: 'com' },
+  { tool: Tool.Industrial, label: TEXTS.tools.industrial, key: 'C', cost: formatMoney(COSTS.zone), zone: 'ind' },
   { tool: Tool.Demolish, label: TEXTS.tools.demolish, key: 'B', cost: TEXTS.tools.demolishRefund },
 ];
 
@@ -19,6 +22,7 @@ export class Toolbar {
     bar.className = 'hud-panel toolbar';
     for (const def of BUTTONS) {
       const b = document.createElement('button');
+      if (def.zone) b.classList.add(`zone-${def.zone}`);
       const name = document.createElement('span');
       name.textContent = def.label;
       const meta = document.createElement('small');

@@ -12,6 +12,8 @@ import { tileToWorld, worldToTile } from './render/iso';
 import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
 import { GameClock } from './sim/clock';
+import { GrowthSim } from './sim/growth';
+import { DemandPanel } from './ui/demandPanel';
 import { Hud } from './ui/hud';
 import { CursorLabel, Toast } from './ui/toast';
 import { Toolbar } from './ui/toolbar';
@@ -37,17 +39,15 @@ async function start(): Promise<void> {
   const state = new CityState();
   generateMap(state);
   const clock = new GameClock(state);
+  const growth = new GrowthSim(state);
+  growth.refresh();
+  // Solo en desarrollo: acceso desde la consola del navegador para probar.
+  if (import.meta.env.DEV) Object.assign(window, { city: { state, growth } });
 
   const world = new Container();
   const mapRenderer = new MapRenderer(state);
   const overlay = new Overlay(state);
-  world.addChild(
-    mapRenderer.groundLayer,
-    mapRenderer.gridLayer,
-    mapRenderer.borderLayer,
-    overlay.graphics,
-    mapRenderer.objectLayer,
-  );
+  world.addChild(mapRenderer.layer, mapRenderer.gridLayer, mapRenderer.borderLayer, overlay.graphics);
   app.stage.addChild(world);
 
   // La cámara puede moverse dentro del rombo que ocupa el mapa.
@@ -68,19 +68,26 @@ async function start(): Promise<void> {
   const uiRoot = document.createElement('div');
   uiRoot.id = 'ui';
   document.body.appendChild(uiRoot);
-  const hud = new Hud(uiRoot, state);
+  const hud = new Hud(uiRoot, state, growth);
+  const demandPanel = new DemandPanel(uiRoot, state);
   const topBar = new TopBar(uiRoot, state, clock);
   const toast = new Toast(uiRoot);
   const cursorLabel = new CursorLabel(uiRoot);
 
   const controls = new CameraControls(app.canvas, camera, recenter);
-  const tools = new ToolController(app.canvas, state, (msg) => toast.show(msg));
+  const tools = new ToolController(
+    app.canvas,
+    state,
+    (msg) => toast.show(msg),
+    () => growth.refresh(),
+  );
   const toolbar = new Toolbar(uiRoot, tools);
   installShortcuts(tools, clock);
 
   app.ticker.add((ticker) => {
     const dt = Math.min(ticker.deltaMS, MAX_FRAME_MS);
-    clock.update(dt);
+    const days = clock.update(dt);
+    for (let i = 0; i < days; i++) growth.dailyTick();
     controls.update(dt);
     camera.apply();
     mapRenderer.cull(camera.viewRect());
@@ -102,6 +109,7 @@ async function start(): Promise<void> {
 
     hud.update(tile, camera.zoom, ticker.FPS);
     topBar.update();
+    demandPanel.update();
     toolbar.update();
   });
 }

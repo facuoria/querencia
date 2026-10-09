@@ -1,14 +1,14 @@
 import type { CityState } from '../core/cityState';
-import { Road, Terrain, type TileCoord } from '../core/types';
+import { Road, Terrain, Zone, type TileCoord } from '../core/types';
 import { COSTS } from '../data/config';
 import { TEXTS } from '../data/texts';
 
 export const TileStatus = {
   /** Se construye o se demuele. */
   Ok: 0,
-  /** Ya hay calle: no se cobra ni se toca. */
+  /** Ya está hecho: no se cobra ni se toca. */
   Existing: 1,
-  /** No se puede: agua, sector bloqueado o autopista. */
+  /** No se puede: agua, sector bloqueado, edificio o autopista. */
   Invalid: 2,
 } as const;
 export type TileStatus = (typeof TileStatus)[keyof typeof TileStatus];
@@ -19,6 +19,7 @@ export interface PlannedTile extends TileCoord {
 
 export interface Plan {
   tiles: PlannedTile[];
+  /** Positivo: se paga. Negativo: se devuelve dinero. */
   cost: number;
   /** Motivo por el que no se puede hacer, o null si se puede. */
   error: string | null;
@@ -43,6 +44,15 @@ export function lPath(from: TileCoord, to: TileCoord): TileCoord[] {
   return out;
 }
 
+/** Todas las casillas del rectángulo entre dos esquinas. */
+export function rectArea(a: TileCoord, b: TileCoord): TileCoord[] {
+  const out: TileCoord[] = [];
+  for (let y = Math.min(a.y, b.y); y <= Math.max(a.y, b.y); y++) {
+    for (let x = Math.min(a.x, b.x); x <= Math.max(a.x, b.x); x++) out.push({ x, y });
+  }
+  return out;
+}
+
 export function planRoad(state: CityState, path: TileCoord[]): Plan {
   let cost = 0;
   let error: string | null = null;
@@ -55,6 +65,10 @@ export function planRoad(state: CityState, path: TileCoord[]): Plan {
     }
     if (state.getTerrain(p.x, p.y) === Terrain.Water) {
       error ??= TEXTS.errors.water;
+      return { ...p, status: TileStatus.Invalid };
+    }
+    if (state.getLevel(p.x, p.y) > 0) {
+      error ??= TEXTS.errors.building;
       return { ...p, status: TileStatus.Invalid };
     }
     cost += COSTS.road + (state.getTerrain(p.x, p.y) === Terrain.Forest ? COSTS.clearForest : 0);
@@ -70,19 +84,48 @@ export function buildRoad(state: CityState, plan: Plan): string | null {
   for (const t of plan.tiles) {
     if (t.status !== TileStatus.Ok) continue;
     if (state.getTerrain(t.x, t.y) === Terrain.Forest) state.setTerrain(t.x, t.y, Terrain.Grass);
+    // Una calle sobre un lote vacío borra la zona.
+    if (state.getZone(t.x, t.y) !== Zone.None) state.setZone(t.x, t.y, Zone.None);
     state.setRoad(t.x, t.y, Road.Street);
   }
   state.money -= plan.cost;
   return null;
 }
 
-/** Todas las casillas del rectángulo entre dos esquinas. */
-export function rectArea(a: TileCoord, b: TileCoord): TileCoord[] {
-  const out: TileCoord[] = [];
-  for (let y = Math.min(a.y, b.y); y <= Math.max(a.y, b.y); y++) {
-    for (let x = Math.min(a.x, b.x); x <= Math.max(a.x, b.x); x++) out.push({ x, y });
+/**
+ * Zonificar un rectángulo. Las casillas que no se pueden (calles, agua, sectores bloqueados)
+ * se saltean en silencio; los edificios de otra zona se marcan en rojo y no se tocan.
+ */
+export function planZone(state: CityState, area: TileCoord[], zone: Zone): Plan {
+  let cost = 0;
+  const tiles: PlannedTile[] = [];
+  for (const p of area) {
+    if (!state.inBounds(p.x, p.y)) continue;
+    if (state.getRoad(p.x, p.y) !== Road.None) continue;
+    if (state.getTerrain(p.x, p.y) === Terrain.Water || !state.isTileUnlocked(p.x, p.y)) continue;
+    const current = state.getZone(p.x, p.y);
+    if (current === zone) {
+      tiles.push({ ...p, status: TileStatus.Existing });
+    } else if (current !== Zone.None && state.getLevel(p.x, p.y) > 0) {
+      tiles.push({ ...p, status: TileStatus.Invalid });
+    } else {
+      cost += COSTS.zone;
+      tiles.push({ ...p, status: TileStatus.Ok });
+    }
   }
-  return out;
+  let error: string | null = null;
+  if (tiles.length === 0) error = TEXTS.errors.nothingToZone;
+  else if (cost > state.money) error = TEXTS.errors.noMoney;
+  return { tiles, cost, error };
+}
+
+export function applyZone(state: CityState, plan: Plan, zone: Zone): string | null {
+  if (plan.error) return plan.error;
+  for (const t of plan.tiles) {
+    if (t.status === TileStatus.Ok) state.setZone(t.x, t.y, zone);
+  }
+  state.money -= plan.cost;
+  return null;
 }
 
 /** Lo que se devuelve al demoler: una parte de lo que costó construir. El costo del plan queda negativo. */
@@ -99,13 +142,15 @@ export function planDemolish(state: CityState, area: TileCoord[]): Plan {
       tiles.push({ ...p, status: TileStatus.Invalid });
       continue;
     }
-    const hasSomething = road === Road.Street || state.getTerrain(p.x, p.y) === Terrain.Forest;
+    const zoned = state.getZone(p.x, p.y) !== Zone.None;
+    const hasSomething = road === Road.Street || zoned || state.getTerrain(p.x, p.y) === Terrain.Forest;
     if (!hasSomething) continue;
     if (!state.isTileUnlocked(p.x, p.y)) {
       tiles.push({ ...p, status: TileStatus.Invalid });
       continue;
     }
     if (road === Road.Street) cost -= COSTS.road * COSTS.demolishRefund;
+    else if (zoned) cost -= COSTS.zone * COSTS.demolishRefund;
     count++;
     tiles.push({ ...p, status: TileStatus.Ok });
   }
@@ -119,6 +164,7 @@ export function demolish(state: CityState, plan: Plan): string | null {
   for (const t of plan.tiles) {
     if (t.status !== TileStatus.Ok) continue;
     if (state.getRoad(t.x, t.y) === Road.Street) state.setRoad(t.x, t.y, Road.None);
+    else if (state.getZone(t.x, t.y) !== Zone.None) state.setZone(t.x, t.y, Zone.None);
     else if (state.getTerrain(t.x, t.y) === Terrain.Forest) state.setTerrain(t.x, t.y, Terrain.Grass);
   }
   state.money -= plan.cost;

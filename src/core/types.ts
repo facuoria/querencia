@@ -13,6 +13,14 @@ export const Road = {
 } as const;
 export type Road = (typeof Road)[keyof typeof Road];
 
+export const Zone = {
+  None: 0,
+  Residential: 1,
+  Commercial: 2,
+  Industrial: 3,
+} as const;
+export type Zone = (typeof Zone)[keyof typeof Zone];
+
 export interface TileCoord {
   x: number;
   y: number;

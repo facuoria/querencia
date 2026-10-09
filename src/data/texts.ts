@@ -11,6 +11,22 @@ export const TEXTS = {
     street: 'Calle',
     highway: 'Autopista',
   },
+  zones: {
+    residential: 'Residencial',
+    commercial: 'Comercial',
+    industrial: 'Industrial',
+    emptyLot: 'Lote vacío',
+    level: 'Nivel',
+    noAccess: 'Sin acceso a la autopista',
+    residents: 'habitantes',
+    jobs: 'empleos',
+    landValue: 'Valor del suelo',
+  },
+  stats: {
+    population: 'Población',
+    demand: 'Demanda',
+    neighborhood: 'Barrio',
+  },
   hud: {
     tile: 'Casilla',
     terrain: 'Terreno',
@@ -26,6 +42,9 @@ export const TEXTS = {
     road: 'Carretera',
     demolish: 'Demoler',
     demolishRefund: 'devuelve 50%',
+    residential: 'Residencial',
+    commercial: 'Comercial',
+    industrial: 'Industrial',
   },
   time: {
     pause: 'Pausa',
@@ -51,11 +70,13 @@ export const TEXTS = {
     locked: 'Ese sector todavía no es tuyo',
     highway: 'La autopista no se puede demoler',
     nothing: 'No hay nada para demoler',
+    nothingToZone: 'No hay lugar para zonificar ahí',
+    building: 'Hay un edificio en el camino',
   },
   help: [
     'Arrastrar con clic derecho o central: mover el mapa',
     'Flechas o WASD: mover · Rueda: zoom · Inicio: volver',
-    'R: carretera · B: demoler · Esc: soltar herramienta',
+    'R: carretera · Z, X, C: zonas · B: demoler · Esc: soltar',
     'Espacio: pausa · 1, 2, 3: velocidad',
   ],
 } as const;
