@@ -178,3 +178,19 @@ describe('servicios', () => {
     expect(unsupplied).toBeGreaterThan(0);
   });
 });
+
+describe('motivos de un lote vacío', () => {
+  it('un lote industrial fuera del radio del pozo dice que le falta agua', () => {
+    const state = flatCity();
+    const y = Math.floor(startCenter(state).y);
+    buildRoad(state, planRoad(state, lPath({ x: MAP.highwayX, y }, { x: MAP.highwayX + 14, y })));
+    addUtilities(state, y);
+    const near = { x: MAP.highwayX + 1, y: y + 1 };
+    const far = { x: MAP.highwayX + 13, y: y + 1 };
+    for (const p of [near, far]) applyZone(state, planZone(state, [p], Zone.Industrial), Zone.Industrial);
+    const sim = new GrowthSim(state, seeded(8));
+    sim.refresh(true);
+    expect(sim.lotBlockers(state.index(near.x, near.y))).toEqual([]);
+    expect(sim.lotBlockers(state.index(far.x, far.y))).toContain('noWater');
+  });
+});

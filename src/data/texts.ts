@@ -1,7 +1,7 @@
 // Textos visibles para el jugador.
 
 export const TEXTS = {
-  title: 'Ciudad',
+  title: 'Querencia',
   terrain: {
     grass: 'Pasto',
     water: 'Agua',
@@ -184,7 +184,7 @@ export const TEXTS = {
     helpHint: 'Muestra u oculta los controles.',
   },
   panels: {
-    city: 'Ciudad',
+    city: 'Querencia',
     milestone: 'Hito',
     nextMilestone: 'Próximo',
     lastMilestone: 'Último hito alcanzado',
@@ -210,7 +210,7 @@ export const TEXTS = {
     off: 'Sonido silenciado (M para activar)',
   },
   start: {
-    title: 'Ciudad',
+    title: 'Querencia',
     subtitle: 'Construí y hacé crecer tu ciudad, de aldea a metrópolis.',
     continue: 'Continuar partida',
     newGame: 'Nueva partida',
@@ -231,6 +231,15 @@ export const TEXTS = {
     loaded: 'Partida cargada',
     error: 'No se pudo guardar la partida',
   },
+  lotBlockers: {
+    noAccess: 'Sin calle conectada a la autopista a 3 casillas o menos',
+    noPower: 'Sin electricidad: está fuera del radio de una planta eléctrica',
+    powerFull: 'La electricidad no alcanza: hay que mejorar o sumar plantas',
+    noWater: 'Sin agua: está fuera del radio de un pozo de agua',
+    waterFull: 'El agua no alcanza: hay que mejorar o sumar pozos',
+    noDemand: 'Por ahora nadie pide más de esta zona',
+    unhappy: 'La gente no quiere mudarse acá: el ánimo es muy bajo',
+  },
   alerts: {
     negative: 'Saldo negativo: si sigue así, se recortan los servicios',
     cuts: 'Servicios recortados por falta de fondos',
@@ -240,6 +249,8 @@ export const TEXTS = {
     fires: 'Incendios',
     blackout: 'Apagón',
     buildingsWithoutPower: 'edificios sin luz',
+    blockedLots: 'lotes no pueden construirse',
+    blockedLotsHint: 'Les falta luz, agua o una calle conectada. Pasá el cursor por un lote para ver qué le falta; los mapas de Electricidad y Agua muestran el alcance.',
   },
   happinessParts: {
     services: 'Servicios',

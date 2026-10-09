@@ -78,7 +78,7 @@ export class Hud {
     const st = this.state;
     let title: string = h.noTile;
     const rows: Row[] = [];
-    let warning = '';
+    const warnings: string[] = [];
     if (tile) {
       const { x, y } = tile;
       const i = st.index(x, y);
@@ -93,7 +93,7 @@ export class Hud {
       else if (road === Road.Street) title = TEXTS.road.street;
       else if (service !== ServiceType.None) {
         title = `${SERVICES[service].name} · ${z.level} ${st.getServiceLevel(x, y)}`;
-        if (!this.growth.services.isWorking(x, y)) warning = TEXTS.services.noAccess;
+        if (!this.growth.services.isWorking(x, y)) warnings.push(TEXTS.services.noAccess);
       } else if (zone !== Zone.None) {
         title = level === 0 ? `${ZONE_NAMES[zone]} · ${z.emptyLot}` : `${ZONE_NAMES[zone]} · ${z.level} ${level}`;
         if (level > 0) {
@@ -112,7 +112,9 @@ export class Hud {
           rows.push({ label: `· ${hp.environment}`, value: signed(p.environment) });
           rows.push({ label: `· ${hp.safety}`, value: signed(p.safety) });
         }
-        if (!this.growth.network.hasAccess(x, y)) warning = z.noAccess;
+        if (level === 0) {
+          for (const b of this.growth.lotBlockers(i)) warnings.push(TEXTS.lotBlockers[b]);
+        } else if (!this.growth.network.hasAccess(x, y)) warnings.push(z.noAccess);
       } else title = TERRAIN_NAMES[st.getTerrain(x, y)];
       if (locked) {
         rows.push({ label: h.sector, value: h.locked });
@@ -126,7 +128,7 @@ export class Hud {
       rows.unshift({ label: h.tile, value: `${x}, ${y}` });
     }
     const footer = `${h.zoom} ${zoom.toFixed(2)}x · ${h.fps} ${Math.round(fps)}`;
-    const key = `${title}|${warning}|${footer}|${rows.map((r) => `${r.label}=${r.value}`).join(';')}`;
+    const key = `${title}|${warnings.join(';')}|${footer}|${rows.map((r) => `${r.label}=${r.value}`).join(';')}`;
     if (key === this.last) return;
     this.last = key;
     this.title.textContent = title;
@@ -145,13 +147,17 @@ export class Hud {
         return row;
       }),
     );
-    this.warning.replaceChildren();
-    this.warning.style.display = warning ? '' : 'none';
-    if (warning) {
-      const text = document.createElement('span');
-      text.textContent = warning;
-      this.warning.append(icon('triangle-alert', 'sm'), text);
-    }
+    this.warning.replaceChildren(
+      ...warnings.map((w) => {
+        const line = document.createElement('div');
+        line.className = 'inline-alert-line';
+        const text = document.createElement('span');
+        text.textContent = w;
+        line.append(icon('triangle-alert', 'sm'), text);
+        return line;
+      }),
+    );
+    this.warning.style.display = warnings.length > 0 ? '' : 'none';
     this.footer.textContent = footer;
   }
 }

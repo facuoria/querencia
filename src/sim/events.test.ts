@@ -20,17 +20,18 @@ function newCity(): CityState {
 describe('hitos', () => {
   it('la industria se desbloquea a los 500 habitantes y no se vuelve a bloquear', () => {
     const state = newCity();
-    const area = rectArea({ x: 70, y: 110 }, { x: 72, y: 111 });
+    // Dentro de la zona inicial (sector 4, 4), a la derecha de la autopista.
+    const area = rectArea({ x: 70, y: 70 }, { x: 72, y: 71 });
     expect(isZoneUnlocked(state, Zone.Industrial)).toBe(false);
     expect(planZone(state, area, Zone.Industrial).error).not.toBeNull();
-    expect(planService(state, { x: 70, y: 110 }, ServiceType.Gas).error).not.toBeNull();
+    expect(planService(state, { x: 70, y: 70 }, ServiceType.Gas).error).not.toBeNull();
 
     state.maxPopulation = 500;
     expect(currentMilestone(state)).toBe(1);
     expect(planZone(state, area, Zone.Industrial).error).toBeNull();
-    expect(planService(state, { x: 70, y: 110 }, ServiceType.Gas).error).toBeNull();
+    expect(planService(state, { x: 70, y: 70 }, ServiceType.Gas).error).toBeNull();
     // La universidad todavía no.
-    expect(planService(state, { x: 70, y: 110 }, ServiceType.University).error).not.toBeNull();
+    expect(planService(state, { x: 70, y: 70 }, ServiceType.University).error).not.toBeNull();
   });
 });
 

@@ -1,4 +1,4 @@
-# Plan de acción: juego de gestión de ciudades isométrico
+# Querencia: plan de acción del juego de gestión de ciudades isométrico
 
 Fecha del plan: 2026-10-09
 
@@ -125,7 +125,7 @@ Las cifras concretas (costos, radios, capacidades) son propuestas iniciales. Van
 
 El mapa es de 128 x 128 casillas, es decir 16.384 en total. Es cuatro veces más grande que uno de 64 x 64, y alcanza para varias semanas de juego sin que el rendimiento sea un problema si solo se dibuja lo que se ve en pantalla.
 
-Para estirar la duración, el mapa se divide en 64 sectores de 16 x 16 casillas. Se empieza con 4 sectores contiguos (32 x 32) pegados a un borde del mapa, junto a la autopista, como en Cities: Skylines. El resto se compra, así que la ciudad crece hacia un solo lado siguiendo la autopista. Cada sector cuesta más que el anterior, así que expandirse depende de la economía.
+Para estirar la duración, el mapa se divide en 64 sectores de 16 x 16 casillas. Se empieza con 4 sectores contiguos (32 x 32) en el centro del mapa, cruzados por la autopista. El resto se compra, así que la ciudad puede crecer hacia cualquier lado. Cada sector cuesta más que el anterior, así que expandirse depende de la economía.
 
 Los hitos desbloquean edificios y herramientas. La población de cada hito es una propuesta inicial:
 

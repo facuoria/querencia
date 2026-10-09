@@ -17,6 +17,8 @@ interface AlertItem {
   icon: IconName;
   text: string;
   severity: 'bad' | 'warn';
+  /** Explicación extra para la ayuda emergente. */
+  hint?: string;
   action: AlertAction;
 }
 
@@ -95,6 +97,21 @@ export class Alerts {
         severity: 'bad',
         text: `${a.blackout}: ${dark.length} ${a.buildingsWithoutPower}`,
         action: { kind: 'focus', tiles: dark },
+      });
+    }
+    const blocked: TileCoord[] = [];
+    for (let i = 0; i < st.zones.length; i++) {
+      if (st.zones[i] === Zone.None || st.buildingLevel[i]! > 0) continue;
+      if (this.growth.lotBlockers(i).some((b) => b !== 'noDemand' && b !== 'unhappy')) blocked.push(tileOf(i));
+    }
+    if (blocked.length > 0) {
+      list.push({
+        id: 'blocked-lots',
+        icon: 'triangle-alert',
+        severity: 'warn',
+        text: `${blocked.length} ${a.blockedLots}`,
+        hint: a.blockedLotsHint,
+        action: { kind: 'focus', tiles: blocked },
       });
     }
     for (const u of UTILITIES) {
@@ -196,10 +213,8 @@ export class Alerts {
         const current = this.items.find((x) => x.id === item.id);
         if (current) this.activate(current);
       });
-      tooltip.attach(b, {
-        title: item.text,
-        description: item.action.kind === 'budget' ? TEXTS.panels.openBudget : TEXTS.panels.goTo,
-      });
+      const go2 = item.action.kind === 'budget' ? TEXTS.panels.openBudget : TEXTS.panels.goTo;
+      tooltip.attach(b, { title: item.text, description: item.hint ? `${item.hint} ${go2}.` : go2 });
       return b;
     });
     const rest = this.items.length - shown.length;

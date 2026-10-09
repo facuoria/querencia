@@ -9,7 +9,10 @@ import { HappinessSim } from './happiness';
 import { computeLandValue } from './landValue';
 import { maxBuildingLevel } from './milestones';
 import { RoadNetwork } from './network';
-import { ServiceSim } from './services';
+import { ServiceSim, consumptionOf } from './services';
+
+/** Motivos por los que un lote vacío no se construye. */
+export type LotBlocker = 'noAccess' | 'noPower' | 'powerFull' | 'noWater' | 'waterFull' | 'noDemand' | 'unhappy';
 
 /** Cada cuántos días se recalcula el valor del suelo. */
 const LAND_VALUE_EVERY_DAYS = 5;
@@ -154,6 +157,31 @@ export class GrowthSim {
       if (this.state.buildingLevel[i]! > 0 && !this.hasPower(i)) n++;
     }
     return n;
+  }
+
+  /**
+   * Por qué un lote vacío no se construye (lista vacía si nada lo impide). Solo lee el estado:
+   * repite las condiciones de grow() para poder mostrarlas en la interfaz.
+   */
+  lotBlockers(i: number): LotBlocker[] {
+    const st = this.state;
+    const zone = st.zones[i] as Zone;
+    if (zone === Zone.None || st.buildingLevel[i]! > 0) return [];
+    const x = i % st.size;
+    const y = (i - x) / st.size;
+    const out: LotBlocker[] = [];
+    if (!this.network.hasAccess(x, y)) out.push('noAccess');
+    const sv = this.services;
+    const need = consumptionOf(zone, 1);
+    if (sv.coverage[ServiceType.Power]![i] !== 1) out.push('noPower');
+    else if (sv.spare(ServiceType.Power) < need) out.push('powerFull');
+    if (sv.coverage[ServiceType.Water]![i] !== 1) out.push('noWater');
+    else if (sv.spare(ServiceType.Water) < need) out.push('waterFull');
+    const d = st.stats.demand;
+    const demand = zone === Zone.Residential ? d.residential : zone === Zone.Commercial ? d.commercial : d.industrial;
+    if (demand <= 0) out.push('noDemand');
+    if (zone === Zone.Residential && st.happiness[i]! < HAPPINESS.leaveBelow) out.push('unhappy');
+    return out;
   }
 
   /** Intentos de construir o mejorar edificios de un tipo de zona. */

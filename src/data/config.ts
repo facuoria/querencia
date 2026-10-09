@@ -4,14 +4,14 @@ export const MAP = {
   size: 128,
   sectorSize: 16,
   /**
-   * Sectores desbloqueados al empezar, en coordenadas de sector.
-   * Es un bloque de 2 x 2 pegado al borde inferior izquierdo (y máximo), junto a la autopista.
+   * Sectores desbloqueados al empezar, en coordenadas de sector: el bloque de 2 x 2 del centro
+   * del mapa. La autopista lo cruza por el medio, así que se puede crecer hacia los dos lados.
    */
   initialSectors: [
-    [3, 6],
-    [4, 6],
-    [3, 7],
-    [4, 7],
+    [3, 3],
+    [4, 3],
+    [3, 4],
+    [4, 4],
   ] as ReadonlyArray<readonly [number, number]>,
   /** Columna x por la que pasa la autopista, de borde a borde a lo largo del eje y. */
   highwayX: 64,

@@ -215,6 +215,23 @@ body {
   font-size: var(--text-sm);
 }
 
+.info-panel .inline-alert {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.inline-alert-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.inline-alert-line .icon {
+  margin-top: 1px;
+}
+
 .inline-alert[data-state='warn'] {
   background: var(--warn-soft);
   color: var(--warn);
