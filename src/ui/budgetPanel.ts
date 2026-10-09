@@ -30,12 +30,13 @@ export class BudgetPanel {
   ) {
     const b = TEXTS.budget;
     this.panel = document.createElement('div');
-    this.panel.className = 'hud-panel budget-panel';
-    const title = document.createElement('div');
-    title.className = 'service-title';
+    this.panel.className = 'panel modal budget-panel';
+    this.panel.setAttribute('role', 'dialog');
+    const title = document.createElement('h2');
+    title.className = 'panel-title';
     title.textContent = b.title;
-    const taxTitle = document.createElement('div');
-    taxTitle.className = 'demand-title';
+    const taxTitle = document.createElement('h3');
+    taxTitle.className = 'section-title';
     taxTitle.textContent = b.taxes;
     this.panel.append(title, taxTitle);
 
@@ -63,6 +64,7 @@ export class BudgetPanel {
     this.body = document.createElement('div');
     this.body.className = 'budget-body';
     const close = document.createElement('button');
+    close.className = 'text-button';
     close.textContent = b.close;
     close.addEventListener('click', () => this.toggle(false));
     this.panel.append(this.body, close);

@@ -6,6 +6,7 @@ export class Toast {
   constructor(parent: HTMLElement) {
     this.el = document.createElement('div');
     this.el.className = 'toast';
+    this.el.setAttribute('role', 'status');
     parent.append(this.el);
   }
 

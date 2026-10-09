@@ -20,14 +20,15 @@ import { GameClock } from './sim/clock';
 import { GrowthSim } from './sim/growth';
 import { currentMilestone, unlocksOf } from './sim/milestones';
 import { Alerts } from './ui/alerts';
+import { BottomBar } from './ui/bottomBar';
 import { BudgetPanel } from './ui/budgetPanel';
-import { DemandPanel } from './ui/demandPanel';
+import { CityPanel } from './ui/cityPanel';
 import { Hud } from './ui/hud';
-import { MapsPanel, ServiceBar, ServiceInfo } from './ui/servicePanels';
+import { MapsPanel, ServiceInfo, SupplyPanel } from './ui/servicePanels';
+import { createShell } from './ui/shell';
 import { Sound } from './ui/sound';
 import { showStartScreen } from './ui/startScreen';
 import { CursorLabel, Toast } from './ui/toast';
-import { Toolbar } from './ui/toolbar';
 import { TopBar, formatMoney } from './ui/topBar';
 import './ui/theme.css';
 import './ui/styles.css';
@@ -122,10 +123,8 @@ async function start(): Promise<void> {
   };
   recenter();
 
-  const uiRoot = document.createElement('div');
-  uiRoot.id = 'ui';
-  document.body.appendChild(uiRoot);
-  const toast = new Toast(uiRoot);
+  const shell = createShell();
+  const toast = new Toast(shell.center);
   const showError = (msg: string): void => {
     toast.show(msg);
     sound.play('error');
@@ -151,21 +150,24 @@ async function start(): Promise<void> {
   });
   window.setInterval(() => saveGame(state), SAVE.autosaveMs);
 
-  const hud = new Hud(uiRoot, state, growth);
-  const demandPanel = new DemandPanel(uiRoot, state);
-  const budgetPanel = new BudgetPanel(uiRoot, state, () => growth.refresh(), (i) => growth.hasPower(i));
+  const hud = new Hud(shell.left, state, growth);
+  const budgetPanel = new BudgetPanel(shell.root, state, () => growth.refresh(), (i) => growth.hasPower(i));
   const topBar = new TopBar(
-    uiRoot,
+    shell.top,
     state,
     clock,
-    () => budgetPanel.toggle(),
-    () => save(true),
-    newGame,
-    () => hud.toggleHelp(),
+    {
+      onBudget: () => budgetPanel.toggle(),
+      onSave: () => save(true),
+      onNewGame: newGame,
+      onHelp: () => hud.toggleHelp(),
+    },
     sound,
   );
-  const alerts = new Alerts(uiRoot, state, growth);
-  const cursorLabel = new CursorLabel(uiRoot);
+  const cityPanel = new CityPanel(shell.right, state);
+  const supplyPanel = new SupplyPanel(shell.right, growth);
+  const alerts = new Alerts(shell.center, state, growth);
+  const cursorLabel = new CursorLabel(shell.root);
 
   const controls = new CameraControls(app.canvas, camera, recenter);
   const tools = new ToolController(
@@ -179,10 +181,9 @@ async function start(): Promise<void> {
       sound.play(tool === Tool.Demolish ? 'demolish' : zoneTool ? 'zone' : 'build');
     },
   );
-  const toolbar = new Toolbar(uiRoot, tools, state);
-  const serviceBar = new ServiceBar(uiRoot, tools, state);
-  const mapsPanel = new MapsPanel(uiRoot, growth, heatmap);
-  const serviceInfo = new ServiceInfo(uiRoot, state, growth, tools, heatmap, showError);
+  const bottomBar = new BottomBar(shell.bottom, tools, state, showError);
+  const serviceInfo = new ServiceInfo(shell.left, state, growth, tools, heatmap, showError);
+  const mapsPanel = new MapsPanel(shell.left, heatmap);
   installShortcuts(
     tools,
     clock,
@@ -211,7 +212,7 @@ async function start(): Promise<void> {
         toast.show(milestoneMessage(m), 'info', 7000);
         sound.play('milestone');
       } else if (newFires > 0) {
-        toast.show(`🔥 ${TEXTS.fire.started}`);
+        toast.show(TEXTS.fire.started);
         sound.play('fire');
       }
       sound.setAmbient(state.stats.population / SOUND.ambientFullPopulation);
@@ -240,9 +241,9 @@ async function start(): Promise<void> {
 
     hud.update(tile, camera.zoom, ticker.FPS);
     topBar.update();
-    demandPanel.update();
-    toolbar.update();
-    serviceBar.update();
+    cityPanel.update();
+    supplyPanel.update();
+    bottomBar.update();
     mapsPanel.update();
     serviceInfo.update();
     budgetPanel.update();

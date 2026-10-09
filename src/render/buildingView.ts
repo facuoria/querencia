@@ -1,7 +1,6 @@
-import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import { hash2 } from '../core/noise';
 import { ServiceType, Zone } from '../core/types';
-import { SERVICES } from '../data/services';
 import { BUILDING_BASE_OFFSET_Y, BUILDING_STYLES, SERVICE_SPRITES, SPRITE_ORIGIN } from '../data/sprites';
 import { tex } from './assets';
 import { tileToWorld } from './iso';
@@ -43,20 +42,6 @@ class Stacker {
     this.container.addChild(sprite);
     this.top = sprite.y;
   }
-
-  /** Ícono redondo flotando sobre el edificio. */
-  badge(icon: string, warning: boolean): void {
-    const g = new Graphics()
-      .circle(0, 0, 17)
-      .fill({ color: warning ? 0xffe1dc : 0xffffff, alpha: 0.95 })
-      .stroke({ width: 3, color: warning ? 0xe0463a : 0x2b3644 });
-    const text = new Text({ text: icon, style: { fontSize: 20 } });
-    text.anchor.set(0.5);
-    const badge = new Container();
-    badge.addChild(g, text);
-    badge.position.set(this.cx, this.top - 22);
-    this.container.addChild(badge);
-  }
 }
 
 /**
@@ -78,14 +63,11 @@ export function createBuilding(zone: Zone, level: number, x: number, y: number, 
     const roofs = level >= def.flatRoofFromLevel ? def.flatRoofs : style.roofs;
     s.add(pick(roofs, x, y, 105));
   }
-  if (burning) {
-    s.container.tint = FIRE_TINT;
-    s.badge('🔥', true);
-  }
+  if (burning) s.container.tint = FIRE_TINT;
   return s.container;
 }
 
-/** Edificio de servicio con su ícono. Si no funciona (sin calle), el ícono se marca en rojo. */
+/** Edificio de servicio. Si no funciona (sin calle) se dibuja más tenue. */
 export function createService(type: ServiceType, level: number, x: number, y: number, working: boolean): Container {
   const sprite = SERVICE_SPRITES[type];
   if (type === ServiceType.None || !sprite) return new Container();
@@ -93,6 +75,7 @@ export function createService(type: ServiceType, level: number, x: number, y: nu
   const floors = sprite.floorsByLevel[level - 1] ?? 0;
   for (let i = 0; i < floors; i++) s.add(sprite.floor);
   if (sprite.roof) s.add(sprite.roof);
-  s.badge(SERVICES[type].icon, !working);
+  // Sin calle conectada el edificio se ve apagado; el aviso lo da la capa de indicadores.
+  if (!working) s.container.alpha = 0.75;
   return s.container;
 }

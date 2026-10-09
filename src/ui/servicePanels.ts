@@ -5,10 +5,13 @@ import { TEXTS } from '../data/texts';
 import type { ToolController } from '../input/tools';
 import type { Heatmap, HeatmapMode } from '../render/heatmap';
 import { lockedMessage, upgradeCost, upgradeService } from '../sim/construction';
-import { isServiceUnlocked, serviceMilestone } from '../sim/milestones';
 import type { GrowthSim } from '../sim/growth';
+import { maxServiceLevel, serviceLevelMilestone } from '../sim/milestones';
 import { UTILITIES } from '../sim/services';
+import { icon, type IconName } from './icons';
+import { panel } from './shell';
 import { formatMoney } from './topBar';
+import { tooltip } from './tooltip';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -17,131 +20,116 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
   return e;
 }
 
-/** Fila de botones para ubicar edificios de servicio. */
-export class ServiceBar {
-  private readonly buttons = new Map<number, HTMLButtonElement>();
-  private last = '';
-
-  constructor(
-    parent: HTMLElement,
-    private readonly tools: ToolController,
-    private readonly state: CityState,
-  ) {
-    const bar = el('div', 'hud-panel service-bar');
-    for (const def of SERVICE_LIST) {
-      const b = el('button');
-      b.append(el('span', 'service-icon', def.icon), el('small', undefined, def.name));
-      b.addEventListener('click', () => tools.setService(def.type));
-      this.buttons.set(def.type, b);
-      bar.append(b);
-    }
-    parent.append(bar);
-  }
-
-  update(): void {
-    const active = this.tools.tool === 'service' ? this.tools.serviceType : -1;
-    const locks = SERVICE_LIST.map((d) => (isServiceUnlocked(this.state, d.type) ? 0 : 1)).join('');
-    const key = `${active}|${locks}`;
-    if (key === this.last) return;
-    this.last = key;
-    for (const [type, b] of this.buttons) {
-      const def = SERVICES[type as 1];
-      const locked = !isServiceUnlocked(this.state, def.type);
-      b.classList.toggle('active', type === active);
-      b.disabled = locked;
-      b.classList.toggle('locked', locked);
-      b.title = locked ? lockedMessage(serviceMilestone(def.type)) : `${def.name} · ${formatMoney(def.cost)}`;
-    }
-  }
+function n(v: number): string {
+  return Math.round(v).toLocaleString('es-AR');
 }
 
-const UTILITY_NAMES: Record<number, string> = {
-  [ServiceType.Power]: TEXTS.utilities.power,
-  [ServiceType.Water]: TEXTS.utilities.water,
-  [ServiceType.Gas]: TEXTS.utilities.gas,
+const SUPPLY_NAMES: Record<number, string> = {
+  [ServiceType.Power]: TEXTS.supplyNames.power,
+  [ServiceType.Water]: TEXTS.supplyNames.water,
+  [ServiceType.Gas]: TEXTS.supplyNames.gas,
 };
 
-/** Estado de luz, agua y gas, y selector del mapa de calor. */
-export class MapsPanel {
-  private readonly rows = new Map<number, { fill: HTMLDivElement; label: HTMLSpanElement }>();
-  private readonly mapButtons = new Map<HeatmapMode, HTMLButtonElement>();
+/** Luz, agua y gas como "uso / capacidad", con el nombre completo y una barra. */
+export class SupplyPanel {
+  private readonly rows = new Map<number, { row: HTMLElement; fill: HTMLDivElement; value: HTMLSpanElement }>();
   private last = '';
 
   constructor(
     parent: HTMLElement,
     private readonly growth: GrowthSim,
-    private readonly heatmap: Heatmap,
   ) {
-    const panel = el('div', 'hud-panel maps-panel');
+    const p = panel('supply-panel', TEXTS.panels.supply);
     for (const u of UTILITIES) {
-      const row = el('div', 'utility-row');
-      const name = el('span', 'utility-name', `${SERVICES[u].icon} ${UTILITY_NAMES[u]}`);
-      const track = el('div', 'utility-track');
-      const fill = el('div', 'utility-fill');
+      const row = el('div', 'supply-row');
+      const head = el('div', 'row');
+      const name = el('span', 'row-label', SUPPLY_NAMES[u]);
+      const value = el('span', 'row-value mono');
+      head.append(icon(SERVICES[u].icon, 'sm'), name, value);
+      const track = el('div', 'meter');
+      const fill = el('div', 'meter-fill');
       track.append(fill);
-      const label = el('span', 'utility-label');
-      row.append(name, track, label);
-      panel.append(row);
-      this.rows.set(u, { fill, label });
+      row.append(head, track);
+      p.body.append(row);
+      tooltip.attach(row, () => {
+        const s = this.growth.services.utilities[u]!;
+        return {
+          title: SUPPLY_NAMES[u]!,
+          description: `${TEXTS.panels.use} ${n(s.consumption)} / ${TEXTS.panels.capacity} ${n(s.capacity)}${
+            s.consumption > s.capacity ? ` · ${TEXTS.utilities.deficit}` : ''
+          }`,
+        };
+      });
+      this.rows.set(u, { row, fill, value });
     }
-    panel.append(el('div', 'demand-title', TEXTS.maps.title));
-    const grid = el('div', 'maps-grid');
-    const modes: Array<[HeatmapMode, string]> = [
-      [null, TEXTS.maps.none],
-      ...SERVICE_LIST.map((d): [HeatmapMode, string] => [d.type, d.icon]),
-      ['landValue', '💰'],
-      ['happiness', '🙂'],
-    ];
-    for (const [mode, label] of modes) {
-      const b = el('button', undefined, label);
-      b.title =
-        mode === null
-          ? TEXTS.maps.none
-          : mode === 'landValue'
-            ? TEXTS.maps.landValue
-            : mode === 'happiness'
-              ? TEXTS.maps.happiness
-              : SERVICES[mode as 1].name;
-      b.addEventListener('click', () => heatmap.setMode(mode));
-      this.mapButtons.set(mode, b);
-      grid.append(b);
-    }
-    panel.append(grid);
-    parent.append(panel);
+    parent.append(p.el);
   }
 
   update(): void {
     const sv = this.growth.services;
-    const parts: string[] = [String(this.heatmap.mode)];
-    for (const u of UTILITIES) {
-      const s = sv.utilities[u]!;
-      parts.push(`${s.capacity}/${s.consumption}`);
-    }
-    const key = parts.join('|');
+    const key = UTILITIES.map((u) => `${sv.utilities[u]!.capacity}/${sv.utilities[u]!.consumption}`).join('|');
     if (key === this.last) return;
     this.last = key;
     for (const u of UTILITIES) {
       const s = sv.utilities[u]!;
-      const row = this.rows.get(u)!;
+      const r = this.rows.get(u)!;
       const ratio = s.capacity > 0 ? Math.min(1, s.consumption / s.capacity) : s.consumption > 0 ? 1 : 0;
-      const deficit = s.consumption > s.capacity;
-      row.fill.style.width = `${ratio * 100}%`;
-      row.fill.classList.toggle('deficit', deficit);
-      row.label.textContent = `${s.consumption}/${s.capacity}`;
-      row.label.classList.toggle('deficit', deficit);
-      row.label.title = deficit ? TEXTS.utilities.deficit : '';
+      const state = s.consumption > s.capacity ? 'bad' : ratio > 0.85 ? 'warn' : 'good';
+      r.fill.style.width = `${ratio * 100}%`;
+      r.row.dataset.state = state;
+      r.value.textContent = `${n(s.consumption)} / ${n(s.capacity)}`;
     }
-    for (const [mode, b] of this.mapButtons) b.classList.toggle('active', mode === this.heatmap.mode);
+  }
+}
+
+/** Selector del mapa de calor, con ícono y nombre en cada opción. */
+export class MapsPanel {
+  private readonly buttons = new Map<HeatmapMode, HTMLButtonElement>();
+  private last: HeatmapMode | undefined;
+
+  constructor(
+    parent: HTMLElement,
+    private readonly heatmap: Heatmap,
+  ) {
+    const p = panel('maps-panel', TEXTS.panels.maps);
+    const grid = el('div', 'maps-grid');
+    const m = TEXTS.maps;
+    const modes: Array<[HeatmapMode, IconName, string]> = [
+      [null, 'layers', m.none],
+      ...SERVICE_LIST.map((d): [HeatmapMode, IconName, string] => [d.type, d.icon, m.byService[d.key]]),
+      ['landValue', 'circle-dollar-sign', m.landValue],
+      ['happiness', 'smile', m.happiness],
+    ];
+    for (const [mode, ic, label] of modes) {
+      const b = el('button', 'map-button');
+      b.append(icon(ic, 'sm'), el('span', undefined, label));
+      b.addEventListener('click', () => heatmap.setMode(mode));
+      tooltip.attach(b, { title: label, description: mode === null ? m.noneHint : m.hint });
+      this.buttons.set(mode, b);
+      grid.append(b);
+    }
+    p.body.append(grid);
+    parent.append(p.el);
+  }
+
+  update(): void {
+    if (this.heatmap.mode === this.last) return;
+    this.last = this.heatmap.mode;
+    for (const [mode, b] of this.buttons) {
+      b.classList.toggle('active', mode === this.heatmap.mode);
+      b.setAttribute('aria-pressed', String(mode === this.heatmap.mode));
+    }
   }
 }
 
 /** Ficha del servicio elegido con la herramienta Seleccionar: datos y botón para mejorarlo. */
 export class ServiceInfo {
-  private readonly panel: HTMLDivElement;
-  private readonly title: HTMLDivElement;
+  private readonly panelEl: HTMLElement;
+  private readonly titleIcon: HTMLSpanElement;
+  private readonly titleText: HTMLSpanElement;
   private readonly body: HTMLDivElement;
   private readonly upgrade: HTMLButtonElement;
-  private readonly coverage: HTMLButtonElement;
+  private readonly upgradeLabel: HTMLSpanElement;
   private tile: TileCoord | null = null;
   private last = '';
 
@@ -153,16 +141,28 @@ export class ServiceInfo {
     heatmap: Heatmap,
     onError: (msg: string) => void,
   ) {
-    this.panel = el('div', 'hud-panel service-info');
-    this.title = el('div', 'service-title');
+    const t = TEXTS.services;
+    const p = panel('service-info');
+    this.panelEl = p.el;
+    const head = el('div', 'service-head');
+    this.titleIcon = el('span', 'icon icon-lg');
+    this.titleText = el('h2', 'panel-title service-name');
+    const close = el('button', 'icon-button');
+    close.append(icon('x', 'sm'));
+    tooltip.attach(close, { title: t.close });
+    head.append(this.titleIcon, this.titleText, close);
     this.body = el('div', 'service-body');
     const actions = el('div', 'service-actions');
-    this.upgrade = el('button');
-    this.coverage = el('button', undefined, TEXTS.services.showCoverage);
-    const close = el('button', undefined, TEXTS.services.close);
-    actions.append(this.upgrade, this.coverage, close);
-    this.panel.append(this.title, this.body, actions);
-    parent.append(this.panel);
+    this.upgrade = el('button', 'text-button primary');
+    this.upgradeLabel = el('span');
+    this.upgrade.append(icon('circle-arrow-up', 'sm'), this.upgradeLabel);
+    tooltip.attach(this.upgrade, () => this.upgradeTip());
+    const coverage = el('button', 'text-button');
+    coverage.append(icon('eye', 'sm'), el('span', undefined, t.showCoverage));
+    actions.append(this.upgrade, coverage);
+    this.panelEl.append(head, this.body, actions);
+    this.panelEl.style.display = 'none';
+    parent.append(this.panelEl);
 
     this.upgrade.addEventListener('click', () => {
       if (!this.tile) return;
@@ -173,10 +173,30 @@ export class ServiceInfo {
         heatmap.redraw();
       }
     });
-    this.coverage.addEventListener('click', () => {
+    coverage.addEventListener('click', () => {
       if (this.tile) heatmap.setMode(state.getService(this.tile.x, this.tile.y));
     });
     close.addEventListener('click', () => (this.tools.selected = null));
+  }
+
+  /** Motivo por el que no se puede mejorar (hito o nivel máximo), o null. */
+  private lockReason(): string | null {
+    if (!this.tile) return null;
+    const next = this.state.getServiceLevel(this.tile.x, this.tile.y) + 1;
+    if (next > 3) return null;
+    return next > maxServiceLevel(this.state) ? lockedMessage(serviceLevelMilestone(next)) : null;
+  }
+
+  private upgradeTip(): { title: string; cost?: string; description?: string; locked?: string | null } {
+    if (!this.tile) return { title: TEXTS.services.upgrade };
+    const cost = upgradeCost(this.state, this.tile.x, this.tile.y);
+    if (cost === null) return { title: TEXTS.services.maxLevel };
+    return {
+      title: TEXTS.services.upgrade,
+      cost: formatMoney(cost),
+      description: TEXTS.services.upgradeHint,
+      locked: this.lockReason() ?? (this.state.money < cost ? TEXTS.errors.noMoney : null),
+    };
   }
 
   update(): void {
@@ -184,7 +204,7 @@ export class ServiceInfo {
     const st = this.state;
     const type = sel ? st.getService(sel.x, sel.y) : ServiceType.None;
     if (!sel || type === ServiceType.None) {
-      if (this.tile) this.panel.style.display = 'none';
+      if (this.tile) this.panelEl.style.display = 'none';
       this.tile = null;
       this.last = '';
       return;
@@ -193,22 +213,37 @@ export class ServiceInfo {
     const level = st.getServiceLevel(sel.x, sel.y);
     const working = this.growth.services.isWorking(sel.x, sel.y);
     const cost = upgradeCost(st, sel.x, sel.y);
-    const key = `${sel.x},${sel.y},${type},${level},${working},${cost},${st.money >= (cost ?? 0)}`;
+    const locked = this.lockReason();
+    const key = `${sel.x},${sel.y},${type},${level},${working},${cost},${st.money >= (cost ?? 0)},${locked}`;
     if (key === this.last) return;
     this.last = key;
 
     const def = SERVICES[type];
     const t = TEXTS.services;
-    this.panel.style.display = 'block';
-    this.title.textContent = `${def.icon} ${def.name}`;
-    const lines = [
-      `${t.level} ${level} / 3`,
-      `${t.radius}: ${def.radius[level - 1]} ${t.tiles}`,
+    this.panelEl.style.display = '';
+    this.titleIcon.innerHTML = icon(def.icon, 'lg').innerHTML;
+    this.titleText.textContent = def.name;
+    const rows: Array<[string, string]> = [
+      [t.level, `${level} / 3`],
+      [t.radius, `${def.radius[level - 1]} ${t.tiles}`],
     ];
-    if (def.capacity) lines.push(`${t.capacity}: ${def.capacity[level - 1]}`);
-    if (!working) lines.push(`⚠ ${t.noAccess}`);
-    this.body.textContent = lines.join('\n');
-    this.upgrade.textContent = cost === null ? t.maxLevel : `${t.upgrade} · ${formatMoney(cost)}`;
-    this.upgrade.disabled = cost === null || st.money < cost;
+    if (def.capacity) rows.push([t.capacity, n(def.capacity[level - 1] ?? 0)]);
+    this.body.replaceChildren(
+      ...rows.map(([label, value]) => {
+        const r = el('div', 'row');
+        r.append(el('span', 'row-label', label), el('span', 'row-value mono', value));
+        return r;
+      }),
+    );
+    if (!working) {
+      const warn = el('div', 'inline-alert');
+      warn.dataset.state = 'bad';
+      warn.append(icon('triangle-alert', 'sm'), el('span', undefined, t.noAccess));
+      this.body.append(warn);
+    }
+    this.upgradeLabel.textContent = cost === null ? t.maxLevel : `${t.upgrade} · ${formatMoney(cost)}`;
+    const blocked = cost === null || locked !== null || st.money < cost;
+    this.upgrade.classList.toggle('locked', blocked);
+    this.upgrade.setAttribute('aria-disabled', String(blocked));
   }
 }

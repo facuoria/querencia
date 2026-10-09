@@ -1,14 +1,17 @@
 // Edificios de servicio: costos, radios y capacidades. Todos los números son propuestas para ajustar jugando.
 
 import { ServiceType } from '../core/types';
+import type { IconName } from '../ui/icons';
 import { TEXTS } from './texts';
 
 export interface ServiceDef {
   type: Exclude<ServiceType, 0>;
   /** Nombre visible. */
   name: string;
-  /** Emoji que se muestra sobre el edificio y en los botones. */
-  icon: string;
+  /** Ícono de línea (ver src/ui/icons). */
+  icon: IconName;
+  /** Clave para los textos (nombre corto y descripción en texts.ts). */
+  key: 'power' | 'water' | 'gas' | 'hospital' | 'school' | 'university' | 'park' | 'fire' | 'police';
   cost: number;
   /** Costo de pasar a nivel 2 y a nivel 3. */
   upgradeCost: readonly [number, number];
@@ -29,7 +32,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Power,
     name: TEXTS.services.power,
     upkeep: 120,
-    icon: '⚡',
+    icon: 'zap',
+    key: 'power',
     cost: 3000,
     upgradeCost: [2000, 4000],
     radius: [14, 18, 22],
@@ -41,7 +45,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Water,
     name: TEXTS.services.water,
     upkeep: 60,
-    icon: '💧',
+    icon: 'droplet',
+    key: 'water',
     cost: 1500,
     upgradeCost: [1200, 2500],
     radius: [10, 13, 16],
@@ -53,7 +58,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Gas,
     name: TEXTS.services.gas,
     upkeep: 150,
-    icon: '🔥',
+    icon: 'flame',
+    key: 'gas',
     cost: 4000,
     upgradeCost: [2500, 5000],
     radius: [12, 16, 20],
@@ -65,7 +71,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Hospital,
     name: TEXTS.services.hospital,
     upkeep: 250,
-    icon: '🏥',
+    icon: 'hospital',
+    key: 'hospital',
     cost: 5000,
     upgradeCost: [3500, 7000],
     radius: [10, 13, 16],
@@ -76,7 +83,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.School,
     name: TEXTS.services.school,
     upkeep: 150,
-    icon: '🏫',
+    icon: 'school',
+    key: 'school',
     cost: 3000,
     upgradeCost: [2000, 4000],
     radius: [8, 10, 12],
@@ -87,7 +95,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.University,
     name: TEXTS.services.university,
     upkeep: 400,
-    icon: '🎓',
+    icon: 'graduation-cap',
+    key: 'university',
     cost: 8000,
     upgradeCost: [5000, 10000],
     radius: [16, 20, 24],
@@ -98,7 +107,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Park,
     name: TEXTS.services.park,
     upkeep: 15,
-    icon: '🌳',
+    icon: 'trees',
+    key: 'park',
     cost: 400,
     upgradeCost: [300, 600],
     radius: [4, 5, 6],
@@ -109,7 +119,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Fire,
     name: TEXTS.services.fire,
     upkeep: 150,
-    icon: '🚒',
+    icon: 'fire-extinguisher',
+    key: 'fire',
     cost: 3500,
     upgradeCost: [2500, 5000],
     radius: [10, 13, 16],
@@ -120,7 +131,8 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
     type: ServiceType.Police,
     name: TEXTS.services.police,
     upkeep: 150,
-    icon: '🚓',
+    icon: 'siren',
+    key: 'police',
     cost: 3500,
     upgradeCost: [2500, 5000],
     radius: [10, 13, 16],
