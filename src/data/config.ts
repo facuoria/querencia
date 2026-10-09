@@ -65,7 +65,7 @@ export const ECONOMY = {
 
 export const HAPPINESS = {
   /** Punto de partida antes de sumar y restar factores. */
-  base: 50,
+  base: 55,
   // Servicios
   noPower: -18,
   noWater: -18,
@@ -134,8 +134,6 @@ export const GROWTH = {
   decayChance: 0.02,
   /** Valor del suelo mínimo para cada nivel (índice = nivel). */
   landValueForLevel: [0, 0, 0.3, 0.55],
-  /** Población de la ciudad necesaria para que aparezca el nivel 3 (hito "Ciudad"). */
-  level3MinPopulation: 10000,
 } as const;
 
 /** Habitantes (residencial) o empleos (comercial e industrial) por edificio, según nivel. */
@@ -149,7 +147,7 @@ export const DEMAND = {
   /** Parte de los habitantes que trabaja. */
   workerRatio: 0.5,
   /** Empleos disponibles afuera de la ciudad, por la autopista. Arrancan la demanda residencial. */
-  externalJobs: 40,
+  externalJobs: 150,
   /** Cuánta gente de más acepta venir aunque no haya empleo para todos (0.15 = 15%). */
   residentialSlack: 0.15,
   /** Empleos comerciales que pide cada habitante. */
@@ -179,6 +177,47 @@ export const LAND_VALUE = {
   neighborhoodBonus: 0.3,
 } as const;
 
+export const FIRE = {
+  /** Probabilidad diaria de que un edificio empiece a arder, con bomberos cerca. */
+  igniteChance: 0.00002,
+  /** Multiplicador si no hay bomberos cerca. */
+  withoutStationFactor: 4,
+  /** Multiplicador para la industria. */
+  industrialFactor: 2,
+  /** Probabilidad diaria de que el fuego pase a cada edificio vecino. */
+  spreadChance: 0.06,
+  /** Con bomberos cerca, el fuego se propaga menos (se multiplica por esto). */
+  spreadWithStationFactor: 0.25,
+  /** Probabilidad diaria de que los bomberos apaguen un incendio dentro de su radio. */
+  extinguishChance: 0.5,
+  /** Días que arde un edificio antes de quedar destruido si nadie lo apaga. */
+  burnDays: 4,
+  /** Ánimo que resta un incendio en el barrio (dentro de este radio). */
+  happinessPenalty: -12,
+  happinessRadius: 4,
+} as const;
+
+/** Hitos por población. Cada uno desbloquea herramientas. */
+export const MILESTONES = [
+  { population: 0, key: 'village' },
+  { population: 500, key: 'town' },
+  { population: 2000, key: 'smallCity' },
+  { population: 10000, key: 'city' },
+  { population: 50000, key: 'metropolis' },
+] as const;
+
+export const SECTORS = {
+  /** Costo del primer sector comprado; cada uno siguiente cuesta más. */
+  baseCost: 5000,
+  costGrowth: 1.35,
+} as const;
+
+export const SAVE = {
+  key: 'ciudad-partida',
+  /** Cada cuántos milisegundos reales se guarda solo. */
+  autosaveMs: 30000,
+} as const;
+
 export const TIME = {
   /** Milisegundos reales que dura un día de juego a velocidad x1. */
   msPerDay: 1500,
@@ -195,6 +234,10 @@ export const COLORS = {
   gridLineAlpha: 0.12,
   /** Tinte que oscurece los sectores bloqueados. */
   lockedTint: 0x8c8c8c,
+  /** Tinte de los edificios sin luz durante un apagón. */
+  blackoutTint: 0x6f7a99,
+  sectorBuyable: 0x4fd16b,
+  sectorBlocked: 0xff5a4f,
   unlockedBorder: 0xfff3c4,
   hoverValid: 0xffffff,
   hoverLocked: 0xff5a4f,

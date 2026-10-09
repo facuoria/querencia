@@ -49,12 +49,20 @@ export class MapRenderer {
   private readonly tiles: Container[] = [];
   private readonly zoneMarks: Record<number, GraphicsContext> = {};
   private roadsVersion = -1;
+  private sectorsVersion = -1;
+  /** 1 si el edificio de la casilla está a oscuras (sin luz) en el dibujo actual. */
+  private readonly dark: Uint8Array;
 
-  /** isServiceWorking: si el servicio de esa casilla funciona (lo decide la simulación). */
+  /**
+   * isServiceWorking: si el servicio de esa casilla funciona.
+   * hasPower: si el edificio de esa casilla (por índice) tiene luz. Los dos los decide la simulación.
+   */
   constructor(
     private readonly state: CityState,
     private readonly isServiceWorking: (x: number, y: number) => boolean,
+    private readonly hasPower: (i: number) => boolean,
   ) {
+    this.dark = new Uint8Array(state.size * state.size);
     const n = state.size;
     for (const [zone, color] of [
       [Zone.Residential, COLORS.zoneResidential],
@@ -106,17 +114,36 @@ export class MapRenderer {
       this.roadsVersion = st.roadsVersion;
       for (let i = 0; i < st.service.length; i++) if (st.service[i] !== ServiceType.None) changes.add(i);
     }
+    if (st.sectorsVersion !== this.sectorsVersion) {
+      this.sectorsVersion = st.sectorsVersion;
+      this.drawBorder();
+    }
     for (const idx of changes) {
       const x = idx % st.size;
       this.buildTile(x, (idx - x) / st.size);
     }
   }
 
-  /** Vuelve a dibujar un sector entero, por ejemplo al desbloquearlo. */
-  rebuildSector(sx: number, sy: number): void {
-    const s = this.state.sectorSize;
-    for (let y = sy * s; y < (sy + 1) * s; y++) for (let x = sx * s; x < (sx + 1) * s; x++) this.buildTile(x, y);
-    this.drawBorder();
+  /** Oscurece los edificios sin luz (apagón) y aclara los que la recuperaron. Se llama una vez por día. */
+  refreshPower(): void {
+    const st = this.state;
+    for (let i = 0; i < st.buildingLevel.length; i++) {
+      const dark = st.buildingLevel[i]! > 0 && !this.hasPower(i) ? 1 : 0;
+      if (dark === this.dark[i]) continue;
+      this.dark[i] = dark;
+      const x = i % st.size;
+      this.applyTint(x, (i - x) / st.size);
+    }
+  }
+
+  private applyTint(x: number, y: number): void {
+    const st = this.state;
+    const i = y * st.size + x;
+    this.tiles[i]!.tint = !st.isTileUnlocked(x, y)
+      ? COLORS.lockedTint
+      : this.dark[i]
+        ? COLORS.blackoutTint
+        : 0xffffff;
   }
 
   /** Muestra solo los tramos que se ven en pantalla. Devuelve cuántos quedaron visibles. */
@@ -135,7 +162,9 @@ export class MapRenderer {
     const st = this.state;
     const c = this.tiles[y * st.size + x]!;
     for (const child of c.removeChildren()) child.destroy({ children: true });
-    c.tint = st.isTileUnlocked(x, y) ? 0xffffff : COLORS.lockedTint;
+    const i = y * st.size + x;
+    this.dark[i] = st.buildingLevel[i]! > 0 && !this.hasPower(i) ? 1 : 0;
+    this.applyTint(x, y);
 
     const top = tileToWorld(x, y);
     const service = st.getService(x, y);
@@ -160,7 +189,7 @@ export class MapRenderer {
       c.addChild(mark);
     }
     if (level > 0) {
-      c.addChild(createBuilding(zone, level, x, y));
+      c.addChild(createBuilding(zone, level, x, y, st.getFire(x, y) > 0));
       return;
     }
     if (st.getTerrain(x, y) === Terrain.Forest && st.getRoad(x, y) === Road.None) this.addTrees(c, x, y);

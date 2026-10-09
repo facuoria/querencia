@@ -24,6 +24,8 @@ function builtCity(): { state: CityState; hospital: { x: number; y: number } } {
   generateMap(state);
   state.terrain.fill(Terrain.Grass);
   state.money = 1e6;
+  // Todo desbloqueado, como si la ciudad ya hubiera pasado todos los hitos.
+  state.maxPopulation = 1e6;
   const y0 = Math.floor(startCenter(state).y) - 9;
   const x0 = MAP.highwayX + 1;
   for (let k = 0; k < 7; k++) {
@@ -97,7 +99,7 @@ describe('economía y ánimo', () => {
     const before = state.money;
     // Mismo estado justo antes del cierre: el balance cobrado es el estimado de ese momento.
     state.day = TIME.daysPerMonth;
-    const expected = projectMonth(state).balance;
+    const expected = projectMonth(state, (i) => sim.hasPower(i)).balance;
     sim.dailyTick();
     expect(state.lastMonth?.balance).toBeCloseTo(expected);
     expect(state.money).toBeCloseTo(before + expected);

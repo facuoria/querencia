@@ -1,19 +1,23 @@
 import { Application, Container } from 'pixi.js';
 import { CityState } from './core/cityState';
 import { generateMap, startCenter } from './core/mapGen';
-import type { TileCoord } from './core/types';
-import { COLORS } from './data/config';
+import { Zone, type TileCoord } from './core/types';
+import { COLORS, MILESTONES, SAVE } from './data/config';
+import { SERVICES } from './data/services';
+import { TEXTS } from './data/texts';
 import { CameraControls } from './input/cameraControls';
 import { installShortcuts } from './input/shortcuts';
 import { Tool, ToolController } from './input/tools';
 import { loadAssets } from './render/assets';
 import { Camera } from './render/camera';
-import { tileToWorld, worldToTile } from './render/iso';
 import { Heatmap } from './render/heatmap';
+import { tileToWorld, worldToTile } from './render/iso';
 import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
+import { deleteSave, loadGame, saveGame } from './save/save';
 import { GameClock } from './sim/clock';
 import { GrowthSim } from './sim/growth';
+import { currentMilestone, unlocksOf } from './sim/milestones';
 import { Alerts } from './ui/alerts';
 import { BudgetPanel } from './ui/budgetPanel';
 import { DemandPanel } from './ui/demandPanel';
@@ -26,6 +30,36 @@ import './ui/styles.css';
 
 /** Tope de tiempo por cuadro, para que volver a una pestaña inactiva no adelante días de golpe. */
 const MAX_FRAME_MS = 250;
+
+const ZONE_NAMES: Record<number, string> = {
+  [Zone.Residential]: TEXTS.zones.residential,
+  [Zone.Commercial]: TEXTS.zones.commercial,
+  [Zone.Industrial]: TEXTS.zones.industrial,
+};
+
+/** "¡Nuevo hito! Pueblo. Se desbloquea: Industrial, Planta de gas, ..." */
+function milestoneMessage(m: number): string {
+  const t = TEXTS.milestones;
+  const u = unlocksOf(m);
+  const items = [
+    ...u.zones.map((z) => ZONE_NAMES[z]!),
+    ...u.services.map((s) => (s === 0 ? '' : SERVICES[s].name)),
+    ...(u.buildingLevel3 ? [t.level3] : []),
+    ...(u.serviceLevel3 ? [t.serviceLevel3] : []),
+  ].filter(Boolean);
+  const name = t[MILESTONES[m]!.key];
+  const text = `${t.reached} ${name}. ${t.unlocks}: ${items.join(', ')}.`;
+  return m === MILESTONES.length - 1 ? `${text} ${t.finalAchievement}` : text;
+}
+
+/** Partida guardada, o una nueva si no hay. */
+function loadOrCreate(): { state: CityState; loaded: boolean } {
+  const saved = loadGame();
+  if (saved) return { state: saved, loaded: true };
+  const state = new CityState();
+  generateMap(state);
+  return { state, loaded: false };
+}
 
 async function start(): Promise<void> {
   const host = document.getElementById('app')!;
@@ -40,8 +74,7 @@ async function start(): Promise<void> {
   host.appendChild(app.canvas);
   await loadAssets();
 
-  const state = new CityState();
-  generateMap(state);
+  const { state, loaded } = loadOrCreate();
   const clock = new GameClock(state);
   const growth = new GrowthSim(state);
   growth.refresh();
@@ -49,19 +82,17 @@ async function start(): Promise<void> {
   if (import.meta.env.DEV) Object.assign(window, { city: { state, growth } });
 
   const world = new Container();
-  const mapRenderer = new MapRenderer(state, (x, y) => {
-    growth.network.update();
-    return growth.services.isWorking(x, y);
-  });
+  const mapRenderer = new MapRenderer(
+    state,
+    (x, y) => {
+      growth.network.update();
+      return growth.services.isWorking(x, y);
+    },
+    (i) => growth.hasPower(i),
+  );
   const heatmap = new Heatmap(state, growth);
   const overlay = new Overlay(state);
-  world.addChild(
-    mapRenderer.layer,
-    heatmap.graphics,
-    mapRenderer.gridLayer,
-    mapRenderer.borderLayer,
-    overlay.graphics,
-  );
+  world.addChild(mapRenderer.layer, heatmap.graphics, mapRenderer.gridLayer, mapRenderer.borderLayer, overlay.graphics);
   app.stage.addChild(world);
 
   // La cámara puede moverse dentro del rombo que ocupa el mapa.
@@ -82,12 +113,41 @@ async function start(): Promise<void> {
   const uiRoot = document.createElement('div');
   uiRoot.id = 'ui';
   document.body.appendChild(uiRoot);
+  const toast = new Toast(uiRoot);
+
+  const save = (announce: boolean): void => {
+    const ok = saveGame(state);
+    if (announce || !ok) toast.show(ok ? TEXTS.save.saved : TEXTS.save.error, ok ? 'info' : 'error');
+  };
+  const newGame = (): void => {
+    if (!window.confirm(TEXTS.save.confirmNew)) return;
+    deleteSave();
+    // Evita que el guardado al cerrar la página vuelva a escribir la ciudad vieja.
+    window.removeEventListener('beforeunload', saveOnLeave);
+    window.location.reload();
+  };
+  const saveOnLeave = (): void => {
+    saveGame(state);
+  };
+  window.addEventListener('beforeunload', saveOnLeave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveGame(state);
+  });
+  window.setInterval(() => saveGame(state), SAVE.autosaveMs);
+
   const hud = new Hud(uiRoot, state, growth);
   const demandPanel = new DemandPanel(uiRoot, state);
-  const budgetPanel = new BudgetPanel(uiRoot, state, () => growth.refresh());
-  const topBar = new TopBar(uiRoot, state, clock, () => budgetPanel.toggle());
+  const budgetPanel = new BudgetPanel(uiRoot, state, () => growth.refresh(), (i) => growth.hasPower(i));
+  const topBar = new TopBar(
+    uiRoot,
+    state,
+    clock,
+    () => budgetPanel.toggle(),
+    () => save(true),
+    newGame,
+    () => hud.toggleHelp(),
+  );
   const alerts = new Alerts(uiRoot, state, growth);
-  const toast = new Toast(uiRoot);
   const cursorLabel = new CursorLabel(uiRoot);
 
   const controls = new CameraControls(app.canvas, camera, recenter);
@@ -100,17 +160,35 @@ async function start(): Promise<void> {
       heatmap.redraw();
     },
   );
-  const toolbar = new Toolbar(uiRoot, tools);
-  const serviceBar = new ServiceBar(uiRoot, tools);
+  const toolbar = new Toolbar(uiRoot, tools, state);
+  const serviceBar = new ServiceBar(uiRoot, tools, state);
   const mapsPanel = new MapsPanel(uiRoot, growth, heatmap);
   const serviceInfo = new ServiceInfo(uiRoot, state, growth, tools, heatmap, (msg) => toast.show(msg));
-  installShortcuts(tools, clock);
+  installShortcuts(tools, clock, () => hud.toggleHelp());
+
+  if (loaded) toast.show(TEXTS.save.loaded, 'info');
+  // En una partida nueva no se anuncia el primer hito; en una cargada, solo los que falten.
+  state.announcedMilestone = Math.max(state.announcedMilestone, loaded ? 0 : currentMilestone(state));
 
   app.ticker.add((ticker) => {
     const dt = Math.min(ticker.deltaMS, MAX_FRAME_MS);
     const days = clock.update(dt);
-    for (let i = 0; i < days; i++) growth.dailyTick();
-    if (days > 0 && heatmap.mode !== null) heatmap.redraw();
+    let newFires = 0;
+    for (let i = 0; i < days; i++) {
+      growth.dailyTick();
+      newFires += growth.newFires;
+    }
+    if (days > 0) {
+      mapRenderer.refreshPower();
+      if (heatmap.mode !== null) heatmap.redraw();
+      const m = currentMilestone(state);
+      if (m > state.announcedMilestone) {
+        state.announcedMilestone = m;
+        toast.show(milestoneMessage(m), 'info', 7000);
+      } else if (newFires > 0) {
+        toast.show(`🔥 ${TEXTS.fire.started}`);
+      }
+    }
     controls.update(dt);
     camera.apply();
     mapRenderer.cull(camera.viewRect());
@@ -125,7 +203,8 @@ async function start(): Promise<void> {
     mapRenderer.sync();
     mapRenderer.gridVisible = tools.tool !== Tool.Select;
     const radius = tools.tool === Tool.Service ? growth.services.radiusOf(tools.serviceType, 1) : 0;
-    overlay.update(tile, tools.plan, tools.tool === Tool.Demolish, radius);
+    const sector = tools.sector ? { ...tools.sector, size: state.sectorSize } : null;
+    overlay.update(tile, tools.plan, tools.tool === Tool.Demolish, radius, sector);
 
     const plan = tools.plan;
     const label = plan ? (plan.error ?? (plan.cost < 0 ? `+${formatMoney(-plan.cost)}` : formatMoney(plan.cost))) : null;

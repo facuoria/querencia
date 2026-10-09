@@ -1,5 +1,5 @@
 import type { CityState } from '../core/cityState';
-import { ECONOMY } from '../data/config';
+import { ECONOMY, HAPPINESS } from '../data/config';
 import { SERVICES } from '../data/services';
 import { TEXTS } from '../data/texts';
 import { servicesCut } from '../sim/economy';
@@ -33,7 +33,13 @@ export class Alerts {
     }
     if (st.stats.population > 50) {
       if (st.stats.unemployment > 0.15) list.push(`💼 ${a.unemployment} (${Math.round(st.stats.unemployment * 100)}%)`);
-      if (st.stats.happiness < 40) list.push(`😠 ${a.unhappy}`);
+      if (st.stats.happiness < HAPPINESS.leaveBelow) list.push(`😠 ${a.unhappy}`);
+    }
+    const fires = this.growth.fire.count();
+    if (fires > 0) list.push(`🔥 ${a.fires}: ${fires}`);
+    const dark = this.growth.blackoutCount();
+    if (dark > 0 && this.growth.services.utilities[1]!.capacity > 0) {
+      list.push(`⚡ ${a.blackout}: ${dark} ${a.buildingsWithoutPower}`);
     }
     const high = Math.max(st.taxRates.residential, st.taxRates.commercial, st.taxRates.industrial);
     if (high >= ECONOMY.defaultTaxRate + 5) list.push(`📈 ${a.highTaxes}`);

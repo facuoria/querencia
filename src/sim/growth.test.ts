@@ -31,6 +31,8 @@ function flatCity(): CityState {
   const state = new CityState();
   generateMap(state);
   state.terrain.fill(Terrain.Grass);
+  // Todo desbloqueado, como si la ciudad ya hubiera pasado todos los hitos.
+  state.maxPopulation = 1e6;
   state.takeChanges();
   return state;
 }

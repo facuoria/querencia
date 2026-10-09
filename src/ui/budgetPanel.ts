@@ -26,6 +26,7 @@ export class BudgetPanel {
     parent: HTMLElement,
     private readonly state: CityState,
     onChange: () => void,
+    private readonly producing: (i: number) => boolean = () => true,
   ) {
     const b = TEXTS.budget;
     this.panel = document.createElement('div');
@@ -77,7 +78,7 @@ export class BudgetPanel {
   update(): void {
     if (!this.open) return;
     const st = this.state;
-    const p = projectMonth(st);
+    const p = projectMonth(st, this.producing);
     const key = `${JSON.stringify(p)}|${JSON.stringify(st.taxRates)}|${st.lastMonth?.balance}`;
     if (key === this.last) return;
     this.last = key;

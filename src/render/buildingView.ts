@@ -6,6 +6,9 @@ import { BUILDING_BASE_OFFSET_Y, BUILDING_STYLES, SERVICE_SPRITES, SPRITE_ORIGIN
 import { tex } from './assets';
 import { tileToWorld } from './iso';
 
+/** Tinte de un edificio en llamas. */
+const FIRE_TINT = 0xffa07a;
+
 const STYLE_BY_ZONE = {
   [Zone.Residential]: BUILDING_STYLES.residential,
   [Zone.Commercial]: BUILDING_STYLES.commercial,
@@ -60,7 +63,7 @@ class Stacker {
  * Arma un edificio de zona apilando piezas: planta baja con vereda, pisos y techo.
  * Las variantes salen de la posición, así que el mismo lote siempre se ve igual.
  */
-export function createBuilding(zone: Zone, level: number, x: number, y: number): Container {
+export function createBuilding(zone: Zone, level: number, x: number, y: number, burning = false): Container {
   if (zone === Zone.None || level === 0) return new Container();
   const def = STYLE_BY_ZONE[zone];
   const style = pick(def.styles, x, y, 101);
@@ -74,6 +77,10 @@ export function createBuilding(zone: Zone, level: number, x: number, y: number):
   if (floors > 0 || def.roofOnGroundFloor) {
     const roofs = level >= def.flatRoofFromLevel ? def.flatRoofs : style.roofs;
     s.add(pick(roofs, x, y, 105));
+  }
+  if (burning) {
+    s.container.tint = FIRE_TINT;
+    s.badge('🔥', true);
   }
   return s.container;
 }

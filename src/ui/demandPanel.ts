@@ -1,5 +1,7 @@
 import type { CityState } from '../core/cityState';
+import { MILESTONES } from '../data/config';
 import { TEXTS } from '../data/texts';
+import { currentMilestone } from '../sim/milestones';
 
 const BARS = [
   { key: 'residential', label: 'R', cls: 'res', title: TEXTS.zones.residential },
@@ -15,6 +17,7 @@ export function moodIcon(h: number): string {
 export class DemandPanel {
   private readonly population: HTMLDivElement;
   private readonly mood: HTMLDivElement;
+  private readonly milestone: HTMLDivElement;
   private readonly fills: HTMLDivElement[] = [];
   private last = '';
 
@@ -25,6 +28,8 @@ export class DemandPanel {
     this.population.className = 'population';
     this.mood = document.createElement('div');
     this.mood.className = 'mood';
+    this.milestone = document.createElement('div');
+    this.milestone.className = 'mood';
     const title = document.createElement('div');
     title.className = 'demand-title';
     title.textContent = TEXTS.stats.demand;
@@ -45,7 +50,7 @@ export class DemandPanel {
       bars.append(col);
       this.fills.push(fill);
     }
-    panel.append(this.population, this.mood, title, bars);
+    panel.append(this.population, this.milestone, this.mood, title, bars);
     parent.append(panel);
   }
 
@@ -54,10 +59,16 @@ export class DemandPanel {
     const values = BARS.map((b) => s.demand[b.key]);
     const h = Math.round(s.happiness);
     const u = Math.round(s.unemployment * 100);
-    const key = `${s.population}|${h}|${u}|${values.map((v) => v.toFixed(2)).join(',')}`;
+    const m = currentMilestone(this.state);
+    const key = `${s.population}|${h}|${u}|${m}|${values.map((v) => v.toFixed(2)).join(',')}`;
     if (key === this.last) return;
     this.last = key;
     this.population.textContent = `${TEXTS.stats.population}: ${s.population.toLocaleString('es-AR')}`;
+    const here = MILESTONES[m]!;
+    const next = MILESTONES[m + 1];
+    this.milestone.textContent = next
+      ? `🏆 ${TEXTS.milestones[here.key]} · ${TEXTS.milestones.next}: ${next.population.toLocaleString('es-AR')}`
+      : `🏆 ${TEXTS.milestones[here.key]}`;
     this.mood.textContent = `${moodIcon(h)} ${TEXTS.stats.happiness}: ${h} · ${TEXTS.stats.unemployment}: ${u}%`;
     values.forEach((v, i) => {
       const fill = this.fills[i]!;

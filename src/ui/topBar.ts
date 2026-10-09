@@ -19,6 +19,9 @@ export class TopBar {
     private readonly state: CityState,
     private readonly clock: GameClock,
     onBudget: () => void,
+    onSave: () => void,
+    onNewGame: () => void,
+    onHelp: () => void,
   ) {
     const bar = document.createElement('div');
     bar.className = 'hud-panel top-bar';
@@ -39,7 +42,19 @@ export class TopBar {
     const budget = document.createElement('button');
     budget.textContent = `📊 ${TEXTS.budget.button}`;
     budget.addEventListener('click', onBudget);
-    bar.append(this.money, budget, this.date, speeds);
+    const save = document.createElement('button');
+    save.textContent = '💾';
+    save.title = TEXTS.save.save;
+    save.addEventListener('click', onSave);
+    const fresh = document.createElement('button');
+    fresh.textContent = '🆕';
+    fresh.title = TEXTS.save.newGame;
+    fresh.addEventListener('click', onNewGame);
+    const help = document.createElement('button');
+    help.textContent = '❔';
+    help.title = TEXTS.helpButton;
+    help.addEventListener('click', onHelp);
+    bar.append(this.money, budget, this.date, speeds, save, fresh, help);
     parent.append(bar);
   }
 

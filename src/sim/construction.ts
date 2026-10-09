@@ -1,7 +1,17 @@
 import type { CityState } from '../core/cityState';
 import { Road, ServiceType, Terrain, Zone, type TileCoord } from '../core/types';
 import { COSTS } from '../data/config';
+import { MILESTONES } from '../data/config';
 import { SERVICES, investedIn } from '../data/services';
+import {
+  isServiceUnlocked,
+  isZoneUnlocked,
+  maxServiceLevel,
+  milestonePopulation,
+  serviceLevelMilestone,
+  serviceMilestone,
+  zoneMilestone,
+} from './milestones';
 import { TEXTS } from '../data/texts';
 
 export const TileStatus = {
@@ -98,6 +108,7 @@ export function buildRoad(state: CityState, plan: Plan): string | null {
  * se saltean en silencio; los edificios de otra zona se marcan en rojo y no se tocan.
  */
 export function planZone(state: CityState, area: TileCoord[], zone: Zone): Plan {
+  if (!isZoneUnlocked(state, zone)) return { tiles: [], cost: 0, error: lockedMessage(zoneMilestone(zone)) };
   let cost = 0;
   const tiles: PlannedTile[] = [];
   for (const p of area) {
@@ -182,6 +193,7 @@ export function demolish(state: CityState, plan: Plan): string | null {
 export function planService(state: CityState, p: TileCoord, type: Exclude<ServiceType, 0>): Plan {
   const def = SERVICES[type];
   const fail = (error: string): Plan => ({ tiles: [{ ...p, status: TileStatus.Invalid }], cost: def.cost, error });
+  if (!isServiceUnlocked(state, type)) return fail(lockedMessage(serviceMilestone(type)));
   if (!state.inBounds(p.x, p.y)) return fail(TEXTS.errors.occupied);
   if (!state.isTileUnlocked(p.x, p.y)) return fail(TEXTS.errors.locked);
   if (state.getTerrain(p.x, p.y) === Terrain.Water) return fail(TEXTS.errors.water);
@@ -213,8 +225,17 @@ export function upgradeCost(state: CityState, x: number, y: number): number | nu
 export function upgradeService(state: CityState, x: number, y: number): string | null {
   const cost = upgradeCost(state, x, y);
   if (cost === null) return TEXTS.services.maxLevel;
+  const next = state.getServiceLevel(x, y) + 1;
+  if (next > maxServiceLevel(state)) return lockedMessage(serviceLevelMilestone(next));
   if (cost > state.money) return TEXTS.errors.noMoney;
   state.setService(x, y, state.getService(x, y), state.getServiceLevel(x, y) + 1);
   state.money -= cost;
   return null;
+}
+
+/** "Se desbloquea con 500 habitantes (Pueblo)". */
+export function lockedMessage(milestone: number): string {
+  const key = MILESTONES[milestone]?.key ?? 'village';
+  const pop = milestonePopulation(milestone).toLocaleString('es-AR');
+  return `${TEXTS.milestones.lockedUntil} ${pop} ${TEXTS.zones.residents} (${TEXTS.milestones[key]})`;
 }

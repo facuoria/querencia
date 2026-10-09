@@ -1,11 +1,13 @@
 import type { CityState, Demand } from '../core/cityState';
-import { Terrain, Zone } from '../core/types';
+import { ServiceType, Terrain, Zone } from '../core/types';
 import { DEMAND, ECONOMY, GROWTH, HAPPINESS, TIME } from '../data/config';
 import { SERVICE_RULES } from '../data/services';
 import { capacityOf } from './capacity';
 import { closeMonth, servicesCut } from './economy';
+import { FireSim } from './fire';
 import { HappinessSim } from './happiness';
 import { computeLandValue } from './landValue';
+import { maxBuildingLevel } from './milestones';
 import { RoadNetwork } from './network';
 import { ServiceSim } from './services';
 
@@ -29,7 +31,10 @@ export class GrowthSim {
   readonly network: RoadNetwork;
   readonly services: ServiceSim;
   readonly happiness: HappinessSim;
+  readonly fire: FireSim;
   readonly landValue: Float32Array;
+  /** Incendios que empezaron en el último día, para avisar al jugador. */
+  newFires = 0;
   private daysSinceLandValue = LAND_VALUE_EVERY_DAYS;
 
   constructor(
@@ -39,6 +44,7 @@ export class GrowthSim {
     this.network = new RoadNetwork(state);
     this.services = new ServiceSim(state, this.network);
     this.happiness = new HappinessSim(state, this.services);
+    this.fire = new FireSim(state, this.services, random);
     this.landValue = new Float32Array(state.size * state.size);
   }
 
@@ -55,7 +61,7 @@ export class GrowthSim {
 
   dailyTick(): void {
     const st = this.state;
-    if (st.day > 0 && st.day % TIME.daysPerMonth === 0) closeMonth(st);
+    if (st.day > 0 && st.day % TIME.daysPerMonth === 0) closeMonth(st, (i) => this.hasPower(i));
     this.network.update();
     this.services.cuts = servicesCut(st);
     this.services.update();
@@ -66,6 +72,7 @@ export class GrowthSim {
       computeLandValue(st, this.landValue, this.services.landBonus, st.happiness);
     }
     this.updateStats();
+    this.newFires = this.fire.dailyTick();
     this.decay();
     const d = this.state.stats.demand;
     this.grow(Zone.Residential, d.residential);
@@ -97,6 +104,7 @@ export class GrowthSim {
       else if (zone === Zone.Industrial) iJobs += cap;
     }
     st.stats.population = pop;
+    st.maxPopulation = Math.max(st.maxPopulation, pop);
     st.stats.commercialJobs = cJobs;
     st.stats.industrialJobs = iJobs;
     const workers = pop * DEMAND.workerRatio;
@@ -127,7 +135,21 @@ export class GrowthSim {
   }
 
   private maxLevel(): number {
-    return this.state.stats.population >= GROWTH.level3MinPopulation ? 3 : 2;
+    return maxBuildingLevel(this.state);
+  }
+
+  /** El edificio tiene luz. Sin luz (apagón) no produce ni paga impuestos. */
+  hasPower(i: number): boolean {
+    return this.services.supplied[ServiceType.Power]![i] === 1;
+  }
+
+  /** Edificios sin luz por falta de capacidad o de cobertura. */
+  blackoutCount(): number {
+    let n = 0;
+    for (let i = 0; i < this.state.buildingLevel.length; i++) {
+      if (this.state.buildingLevel[i]! > 0 && !this.hasPower(i)) n++;
+    }
+    return n;
   }
 
   /** Intentos de construir o mejorar edificios de un tipo de zona. */
@@ -150,6 +172,7 @@ export class GrowthSim {
       const x = i % st.size;
       const y = (i - x) / st.size;
       const level = st.buildingLevel[i]!;
+      if (st.fire[i]! > 0) continue;
       const sv = this.services;
       // Nadie se muda a un lugar donde la gente está descontenta.
       if (zone === Zone.Residential && st.happiness[i]! < HAPPINESS.leaveBelow) continue;

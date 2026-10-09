@@ -9,11 +9,13 @@ export class Toast {
     parent.append(this.el);
   }
 
-  show(message: string): void {
+  /** kind: 'error' (rojo) o 'info' (azul). */
+  show(message: string, kind: 'error' | 'info' = 'error', ms = 2200): void {
     this.el.textContent = message;
+    this.el.classList.toggle('info', kind === 'info');
     this.el.classList.add('visible');
     window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => this.el.classList.remove('visible'), 2200);
+    this.timer = window.setTimeout(() => this.el.classList.remove('visible'), ms);
   }
 }
 

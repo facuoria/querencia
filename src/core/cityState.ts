@@ -47,6 +47,8 @@ export class CityState {
   /** Edificio de servicio de cada casilla y su nivel (1 a 3). */
   readonly service: Uint8Array;
   readonly serviceLevel: Uint8Array;
+  /** Días que lleva ardiendo el edificio de cada casilla (0 = sin fuego). */
+  readonly fire: Uint8Array;
   readonly unlockedSectors: Uint8Array;
   /** Habitantes de cada sector (barrio). */
   readonly sectorPopulation: Float64Array;
@@ -60,6 +62,14 @@ export class CityState {
   roadsVersion = 0;
   /** Sube cada vez que se construye, mejora o demuele un servicio. */
   servicesVersion = 0;
+  /** Sube cada vez que se compra un sector. */
+  sectorsVersion = 0;
+  /** Sectores comprados (sin contar los iniciales). */
+  sectorsBought = 0;
+  /** Población máxima que tuvo la ciudad: los hitos alcanzados no se pierden. */
+  maxPopulation = 0;
+  /** Último hito que ya se le anunció al jugador. */
+  announcedMilestone = 0;
   stats: CityStats = {
     population: 0,
     commercialJobs: 0,
@@ -75,7 +85,7 @@ export class CityState {
   /** Índices de casillas modificadas desde la última vez que el dibujo las leyó. */
   private readonly changed = new Set<number>();
 
-  constructor(size = MAP.size, sectorSize = MAP.sectorSize) {
+  constructor(size: number = MAP.size, sectorSize: number = MAP.sectorSize) {
     this.size = size;
     this.sectorSize = sectorSize;
     this.sectorsPerSide = size / sectorSize;
@@ -86,6 +96,7 @@ export class CityState {
     this.buildingLevel = new Uint8Array(n);
     this.service = new Uint8Array(n);
     this.serviceLevel = new Uint8Array(n);
+    this.fire = new Uint8Array(n);
     this.unlockedSectors = new Uint8Array(this.sectorsPerSide * this.sectorsPerSide);
     this.sectorPopulation = new Float64Array(this.sectorsPerSide * this.sectorsPerSide);
     this.happiness = new Float32Array(n).fill(50);
@@ -135,6 +146,7 @@ export class CityState {
     const i = y * this.size + x;
     this.zones[i] = z;
     this.buildingLevel[i] = 0;
+    this.fire[i] = 0;
     this.markChanged(x, y);
   }
 
@@ -143,7 +155,18 @@ export class CityState {
   }
 
   setLevel(x: number, y: number, level: number): void {
-    this.buildingLevel[y * this.size + x] = level;
+    const i = y * this.size + x;
+    this.buildingLevel[i] = level;
+    if (level === 0) this.fire[i] = 0;
+    this.markChanged(x, y);
+  }
+
+  getFire(x: number, y: number): number {
+    return this.fire[y * this.size + x]!;
+  }
+
+  setFire(x: number, y: number, days: number): void {
+    this.fire[y * this.size + x] = days;
     this.markChanged(x, y);
   }
 
@@ -162,6 +185,7 @@ export class CityState {
     this.serviceLevel[i] = type === ServiceType.None ? 0 : level;
     this.zones[i] = Zone.None;
     this.buildingLevel[i] = 0;
+    this.fire[i] = 0;
     this.servicesVersion++;
     this.markChanged(x, y);
   }
@@ -183,6 +207,9 @@ export class CityState {
 
   unlockSector(sx: number, sy: number): void {
     this.unlockedSectors[sy * this.sectorsPerSide + sx] = 1;
+    this.sectorsVersion++;
+    const s = this.sectorSize;
+    for (let y = sy * s; y < (sy + 1) * s; y++) for (let x = sx * s; x < (sx + 1) * s; x++) this.markChanged(x, y);
   }
 
   isTileUnlocked(x: number, y: number): boolean {

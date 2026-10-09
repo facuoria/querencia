@@ -4,7 +4,8 @@ import { SERVICE_LIST, SERVICES } from '../data/services';
 import { TEXTS } from '../data/texts';
 import type { ToolController } from '../input/tools';
 import type { Heatmap, HeatmapMode } from '../render/heatmap';
-import { upgradeCost, upgradeService } from '../sim/construction';
+import { lockedMessage, upgradeCost, upgradeService } from '../sim/construction';
+import { isServiceUnlocked, serviceMilestone } from '../sim/milestones';
 import type { GrowthSim } from '../sim/growth';
 import { UTILITIES } from '../sim/services';
 import { formatMoney } from './topBar';
@@ -19,12 +20,16 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 /** Fila de botones para ubicar edificios de servicio. */
 export class ServiceBar {
   private readonly buttons = new Map<number, HTMLButtonElement>();
+  private last = '';
 
-  constructor(parent: HTMLElement, private readonly tools: ToolController) {
+  constructor(
+    parent: HTMLElement,
+    private readonly tools: ToolController,
+    private readonly state: CityState,
+  ) {
     const bar = el('div', 'hud-panel service-bar');
     for (const def of SERVICE_LIST) {
       const b = el('button');
-      b.title = `${def.name} · ${formatMoney(def.cost)}`;
       b.append(el('span', 'service-icon', def.icon), el('small', undefined, def.name));
       b.addEventListener('click', () => tools.setService(def.type));
       this.buttons.set(def.type, b);
@@ -35,7 +40,18 @@ export class ServiceBar {
 
   update(): void {
     const active = this.tools.tool === 'service' ? this.tools.serviceType : -1;
-    for (const [type, b] of this.buttons) b.classList.toggle('active', type === active);
+    const locks = SERVICE_LIST.map((d) => (isServiceUnlocked(this.state, d.type) ? 0 : 1)).join('');
+    const key = `${active}|${locks}`;
+    if (key === this.last) return;
+    this.last = key;
+    for (const [type, b] of this.buttons) {
+      const def = SERVICES[type as 1];
+      const locked = !isServiceUnlocked(this.state, def.type);
+      b.classList.toggle('active', type === active);
+      b.disabled = locked;
+      b.classList.toggle('locked', locked);
+      b.title = locked ? lockedMessage(serviceMilestone(def.type)) : `${def.name} · ${formatMoney(def.cost)}`;
+    }
   }
 }
 

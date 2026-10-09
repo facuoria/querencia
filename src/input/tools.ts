@@ -13,6 +13,7 @@ import {
   rectArea,
   type Plan,
 } from '../sim/construction';
+import { buySector, canBuySector, sectorCost, sectorError } from '../sim/sectors';
 
 export const Tool = {
   Select: 'select',
@@ -22,6 +23,7 @@ export const Tool = {
   Industrial: 'industrial',
   Service: 'service',
   Demolish: 'demolish',
+  Sector: 'sector',
 } as const;
 export type Tool = (typeof Tool)[keyof typeof Tool];
 
@@ -43,6 +45,8 @@ export class ToolController {
   plan: Plan | null = null;
   /** Casilla elegida con la herramienta Seleccionar. */
   selected: TileCoord | null = null;
+  /** Sector bajo el cursor con la herramienta de comprar terreno. */
+  sector: { sx: number; sy: number; buyable: boolean } | null = null;
   private dragStart: TileCoord | null = null;
   private hover: TileCoord | null = null;
 
@@ -79,6 +83,19 @@ export class ToolController {
   /** Se llama una vez por cuadro con la casilla bajo el cursor. */
   setHover(tile: TileCoord | null): void {
     this.hover = tile;
+    if (this.tool === Tool.Sector) {
+      this.sector = null;
+      this.plan = null;
+      if (!tile) return;
+      const s = this.state.sectorOf(tile.x, tile.y);
+      // Sobre un sector propio no se marca nada.
+      if (this.state.isSectorUnlocked(s.x, s.y)) return;
+      const error = sectorError(this.state, s.x, s.y);
+      this.sector = { sx: s.x, sy: s.y, buyable: canBuySector(this.state, s.x, s.y) };
+      this.plan = { tiles: [], cost: sectorCost(this.state), error };
+      return;
+    }
+    this.sector = null;
     if (this.dragStart && tile) this.plan = this.makePlan(this.dragStart, tile);
     else if (this.tool === Tool.Service) this.plan = tile ? planService(this.state, tile, this.serviceType) : null;
   }
@@ -91,6 +108,13 @@ export class ToolController {
   private begin(): void {
     if (this.tool === Tool.Select) {
       this.selected = this.hover ? { ...this.hover } : null;
+      return;
+    }
+    if (this.tool === Tool.Sector) {
+      if (!this.sector) return;
+      const error = buySector(this.state, this.sector.sx, this.sector.sy);
+      if (error) this.onError(error);
+      else this.onChange();
       return;
     }
     if (!this.hover) return;

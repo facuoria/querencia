@@ -20,6 +20,7 @@ const ZONE_NAMES: Record<Zone, string> = {
 /** Panel de información de la casilla bajo el cursor. Solo lee el estado. */
 export class Hud {
   private readonly info: HTMLDivElement;
+  private readonly help: HTMLDivElement;
   private lastText = '';
 
   constructor(
@@ -36,12 +37,18 @@ export class Hud {
 
     const help = document.createElement('div');
     help.className = 'hud-panel hud-help';
+    help.style.display = 'none';
+    this.help = help;
     for (const line of TEXTS.help) {
       const p = document.createElement('div');
       p.textContent = line;
       help.append(p);
     }
     parent.append(panel, help);
+  }
+
+  toggleHelp(): void {
+    this.help.style.display = this.help.style.display === 'none' ? 'block' : 'none';
   }
 
   update(tile: TileCoord | null, zoom: number, fps: number): void {

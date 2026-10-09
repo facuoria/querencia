@@ -429,3 +429,27 @@ button:disabled {
 .toast {
   top: 140px;
 }
+
+.toast.info {
+  background: rgba(40, 90, 160, 0.94);
+  max-width: 560px;
+  text-align: center;
+}
+
+.service-bar button.locked {
+  filter: grayscale(1);
+}
+
+.top-bar button,
+.toolbar button {
+  white-space: nowrap;
+}
+
+.toolbar button {
+  min-width: 84px;
+  padding: 5px 8px;
+}
+
+.hud-help {
+  bottom: 160px;
+}

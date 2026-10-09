@@ -4,8 +4,11 @@ import { ECONOMY } from '../data/config';
 import { SERVICES } from '../data/services';
 import { capacityOf } from './capacity';
 
-/** Calcula ingresos y gastos de un mes con el estado actual de la ciudad (sin cobrar nada). */
-export function projectMonth(state: CityState): MonthReport {
+/**
+ * Calcula ingresos y gastos de un mes con el estado actual de la ciudad (sin cobrar nada).
+ * producing: si el edificio de una casilla produce (por ejemplo, no está sin luz). Por defecto, todos.
+ */
+export function projectMonth(state: CityState, producing: (i: number) => boolean = () => true): MonthReport {
   const income = { residential: 0, commercial: 0, industrial: 0 };
   let roads = 0;
   let serviceUpkeep = 0;
@@ -17,7 +20,7 @@ export function projectMonth(state: CityState): MonthReport {
       serviceUpkeep += SERVICES[service].upkeep * factor;
     }
     const level = state.buildingLevel[i]!;
-    if (level === 0) continue;
+    if (level === 0 || state.fire[i]! > 0 || !producing(i)) continue;
     const zone = state.zones[i]!;
     const units = capacityOf(zone, level);
     if (zone === Zone.Residential) income.residential += units;
@@ -35,8 +38,8 @@ export function projectMonth(state: CityState): MonthReport {
 }
 
 /** Cierre de mes: se cobra el balance y se lleva la cuenta de los meses en negativo. */
-export function closeMonth(state: CityState): MonthReport {
-  const report = projectMonth(state);
+export function closeMonth(state: CityState, producing?: (i: number) => boolean): MonthReport {
+  const report = projectMonth(state, producing);
   state.money += report.balance;
   state.lastMonth = report;
   state.monthsNegative = state.money < 0 ? state.monthsNegative + 1 : 0;

@@ -1,6 +1,6 @@
 import type { CityState } from '../core/cityState';
 import { Road, ServiceType, Terrain, Zone } from '../core/types';
-import { ECONOMY, HAPPINESS } from '../data/config';
+import { ECONOMY, FIRE, HAPPINESS } from '../data/config';
 import { capacityOf } from './capacity';
 import { BoxSum } from './landValue';
 import type { ServiceSim } from './services';
@@ -21,6 +21,7 @@ export interface HappinessParts {
 export class HappinessSim {
   private industry: BoxSum | null = null;
   private nature: BoxSum | null = null;
+  private fires: BoxSum | null = null;
 
   constructor(
     private readonly state: CityState,
@@ -32,6 +33,7 @@ export class HappinessSim {
     const n = st.size;
     this.industry = new BoxSum(n, (i) => (st.zones[i] === Zone.Industrial && st.buildingLevel[i]! > 0 ? 1 : 0));
     this.nature = new BoxSum(n, (i) => (st.terrain[i] === Terrain.Water || st.terrain[i] === Terrain.Forest ? 1 : 0));
+    this.fires = new BoxSum(n, (i) => (st.fire[i]! > 0 ? 1 : 0));
 
     const spp = st.sectorsPerSide;
     const sum = new Float64Array(spp * spp);
@@ -92,6 +94,7 @@ export class HappinessSim {
       if (st.sectorPopulation[sector.y * st.sectorsPerSide + sector.x]! > H.crimePopulation) safety += H.crime;
     }
     if (covered(ServiceType.Fire)) safety += H.fire;
+    if ((this.fires?.average(x, y, FIRE.happinessRadius) ?? 0) > 0) safety += FIRE.happinessPenalty;
 
     const total = Math.max(0, Math.min(100, H.base + services + economy + environment + safety));
     return { services, economy, environment, safety, total };
