@@ -1,14 +1,25 @@
 import { Application, Container } from 'pixi.js';
 import { CityState } from './core/cityState';
-import { generateMap } from './core/mapGen';
-import { COLORS, MAP } from './data/config';
+import { generateMap, startCenter } from './core/mapGen';
+import type { TileCoord } from './core/types';
+import { COLORS } from './data/config';
 import { CameraControls } from './input/cameraControls';
+import { installShortcuts } from './input/shortcuts';
+import { Tool, ToolController } from './input/tools';
+import { loadAssets } from './render/assets';
 import { Camera } from './render/camera';
-import { TileHighlight } from './render/highlight';
 import { tileToWorld, worldToTile } from './render/iso';
 import { MapRenderer } from './render/mapRenderer';
+import { Overlay } from './render/overlay';
+import { GameClock } from './sim/clock';
 import { Hud } from './ui/hud';
+import { CursorLabel, Toast } from './ui/toast';
+import { Toolbar } from './ui/toolbar';
+import { TopBar, formatMoney } from './ui/topBar';
 import './ui/styles.css';
+
+/** Tope de tiempo por cuadro, para que volver a una pestaña inactiva no adelante días de golpe. */
+const MAX_FRAME_MS = 250;
 
 async function start(): Promise<void> {
   const host = document.getElementById('app')!;
@@ -21,14 +32,22 @@ async function start(): Promise<void> {
     resolution: window.devicePixelRatio || 1,
   });
   host.appendChild(app.canvas);
+  await loadAssets();
 
   const state = new CityState();
   generateMap(state);
+  const clock = new GameClock(state);
 
   const world = new Container();
   const mapRenderer = new MapRenderer(state);
-  const highlight = new TileHighlight(state);
-  world.addChild(mapRenderer.groundLayer, highlight.graphics, mapRenderer.objectLayer);
+  const overlay = new Overlay(state);
+  world.addChild(
+    mapRenderer.groundLayer,
+    mapRenderer.gridLayer,
+    mapRenderer.borderLayer,
+    overlay.graphics,
+    mapRenderer.objectLayer,
+  );
   app.stage.addChild(world);
 
   // La cámara puede moverse dentro del rombo que ocupa el mapa.
@@ -39,39 +58,51 @@ async function start(): Promise<void> {
     top: tileToWorld(0, 0).y,
     bottom: tileToWorld(size, size).y,
   });
-
-  // Centro del bloque de sectores iniciales.
   const recenter = (): void => {
-    const s = state.sectorSize;
-    const xs = MAP.initialSectors.map(([sx]) => sx);
-    const ys = MAP.initialSectors.map(([, sy]) => sy);
-    const cx = ((Math.min(...xs) + Math.max(...xs) + 1) * s) / 2;
-    const cy = ((Math.min(...ys) + Math.max(...ys) + 1) * s) / 2;
-    const c = tileToWorld(cx, cy);
-    camera.centerOn(c.x, c.y);
+    const c = startCenter(state);
+    const w = tileToWorld(c.x, c.y);
+    camera.centerOn(w.x, w.y);
   };
   recenter();
-
-  const controls = new CameraControls(app.canvas, camera, recenter);
 
   const uiRoot = document.createElement('div');
   uiRoot.id = 'ui';
   document.body.appendChild(uiRoot);
   const hud = new Hud(uiRoot, state);
+  const topBar = new TopBar(uiRoot, state, clock);
+  const toast = new Toast(uiRoot);
+  const cursorLabel = new CursorLabel(uiRoot);
+
+  const controls = new CameraControls(app.canvas, camera, recenter);
+  const tools = new ToolController(app.canvas, state, (msg) => toast.show(msg));
+  const toolbar = new Toolbar(uiRoot, tools);
+  installShortcuts(tools, clock);
 
   app.ticker.add((ticker) => {
-    controls.update(ticker.deltaMS);
+    const dt = Math.min(ticker.deltaMS, MAX_FRAME_MS);
+    clock.update(dt);
+    controls.update(dt);
     camera.apply();
     mapRenderer.cull(camera.viewRect());
 
-    let tile = null;
+    let tile: TileCoord | null = null;
     if (controls.pointer) {
       const w = camera.screenToWorld(controls.pointer.x, controls.pointer.y);
       const t = worldToTile(w.x, w.y);
       if (state.inBounds(t.x, t.y)) tile = t;
     }
-    highlight.update(tile);
+    tools.setHover(tile);
+    mapRenderer.sync();
+    mapRenderer.gridVisible = tools.tool !== Tool.Select;
+    overlay.update(tile, tools.plan, tools.tool === Tool.Demolish);
+
+    const plan = tools.plan;
+    const label = plan ? (plan.error ?? formatMoney(plan.cost)) : null;
+    cursorLabel.update(label, controls.pointer?.x ?? 0, controls.pointer?.y ?? 0, !!plan?.error);
+
     hud.update(tile, camera.zoom, ticker.FPS);
+    topBar.update();
+    toolbar.update();
   });
 }
 

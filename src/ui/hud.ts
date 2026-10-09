@@ -1,5 +1,5 @@
 import type { CityState } from '../core/cityState';
-import { Terrain, type TileCoord } from '../core/types';
+import { Road, Terrain, type TileCoord } from '../core/types';
 import { TEXTS } from '../data/texts';
 
 const TERRAIN_NAMES: Record<Terrain, string> = {
@@ -37,8 +37,15 @@ export class Hud {
     if (tile) {
       const sector = this.state.sectorOf(tile.x, tile.y);
       const locked = !this.state.isSectorUnlocked(sector.x, sector.y);
+      const road = this.state.getRoad(tile.x, tile.y);
+      const what =
+        road === Road.Highway
+          ? TEXTS.road.highway
+          : road === Road.Street
+            ? TEXTS.road.street
+            : TERRAIN_NAMES[this.state.getTerrain(tile.x, tile.y)];
       lines.push(`${h.tile}: ${tile.x}, ${tile.y}`);
-      lines.push(`${h.terrain}: ${TERRAIN_NAMES[this.state.getTerrain(tile.x, tile.y)]}`);
+      lines.push(`${h.terrain}: ${what}`);
       lines.push(`${h.sector}: ${sector.x}, ${sector.y} (${locked ? h.locked : h.unlocked})`);
     } else {
       lines.push(h.noTile);

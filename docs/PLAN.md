@@ -19,7 +19,7 @@ Estas decisiones salieron de las conversaciones previas y son la base del resto 
 | Construcción | Zonificación residencial, comercial e industrial. Los edificios crecen y mejoran solos |
 | Edificios de servicio | Se colocan a mano y se mejoran pagando: hospitales, colegios, universidades, parques, bomberos y policía |
 | Luz, agua y gas | Plantas con cobertura por radio |
-| Carreteras | Se trazan a mano y conectan las zonas |
+| Carreteras | Se trazan a mano y conectan las zonas. Una autopista cruza el mapa de borde a borde: es la conexión con el exterior y no se puede demoler |
 | Población | Simulación agregada por barrio. Autos y peatones son solo decorativos |
 | Ánimo de la gente | Depende de los servicios, los impuestos y el empleo, el entorno y la seguridad |
 | Objetivo | Sandbox con hitos y desbloqueos según la población |
@@ -125,7 +125,7 @@ Las cifras concretas (costos, radios, capacidades) son propuestas iniciales. Van
 
 El mapa es de 128 x 128 casillas, es decir 16.384 en total. Es cuatro veces más grande que uno de 64 x 64, y alcanza para varias semanas de juego sin que el rendimiento sea un problema si solo se dibuja lo que se ve en pantalla.
 
-Para estirar la duración, el mapa se divide en 64 sectores de 16 x 16 casillas. Se empieza con 4 sectores contiguos (32 x 32) y el resto se compra. Cada sector cuesta más que el anterior, así que expandirse depende de la economía.
+Para estirar la duración, el mapa se divide en 64 sectores de 16 x 16 casillas. Se empieza con 4 sectores contiguos (32 x 32) pegados a un borde del mapa, junto a la autopista, como en Cities: Skylines. El resto se compra, así que la ciudad crece hacia un solo lado siguiendo la autopista. Cada sector cuesta más que el anterior, así que expandirse depende de la economía.
 
 Los hitos desbloquean edificios y herramientas. La población de cada hito es una propuesta inicial:
 
@@ -190,6 +190,7 @@ Cada etapa termina con algo jugable y probable. No se pasa a la siguiente hasta 
 ### Etapa 2: carreteras, dinero y reloj
 
 - Trazado de carreteras arrastrando, con tiles que se conectan solos en curvas y cruces. Demolición.
+- Autopista prearmada de borde a borde que pasa por la zona inicial. En la etapa 3, un lote solo crece si su calle llega a la autopista.
 - Barra de herramientas, dinero inicial y costo por construir.
 - Reloj de juego con pausa y velocidades x1, x2 y x3.
 - Criterio: se arma una red de calles y el dinero baja según lo construido.

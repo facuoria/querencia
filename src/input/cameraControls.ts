@@ -12,13 +12,12 @@ const PAN_KEYS: Record<string, [number, number]> = {
   KeyD: [-1, 0],
 };
 
-/** Paneo con clic derecho/central o espacio + clic izquierdo, zoom con la rueda y paneo con teclado. */
+/** Paneo con clic derecho o central, zoom con la rueda y paneo con teclado. */
 export class CameraControls {
   /** Última posición del puntero sobre el canvas, o null si está afuera. */
   pointer: { x: number; y: number } | null = null;
 
   private dragging = false;
-  private spaceHeld = false;
   private lastDrag = { x: 0, y: 0 };
   private readonly keys = new Set<string>();
 
@@ -36,10 +35,7 @@ export class CameraControls {
     canvas.addEventListener('wheel', this.onWheel, { passive: false });
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
-    window.addEventListener('blur', () => {
-      this.keys.clear();
-      this.spaceHeld = false;
-    });
+    window.addEventListener('blur', () => this.keys.clear());
   }
 
   /** Aplica el paneo con teclado. Se llama una vez por cuadro. */
@@ -60,8 +56,7 @@ export class CameraControls {
   }
 
   private readonly onPointerDown = (e: PointerEvent): void => {
-    const isPanButton = e.button === 1 || e.button === 2 || (e.button === 0 && this.spaceHeld);
-    if (!isPanButton) return;
+    if (e.button !== 1 && e.button !== 2) return;
     e.preventDefault();
     this.dragging = true;
     this.lastDrag = { x: e.clientX, y: e.clientY };
@@ -81,7 +76,7 @@ export class CameraControls {
     if (!this.dragging) return;
     this.dragging = false;
     if (this.canvas.hasPointerCapture(e.pointerId)) this.canvas.releasePointerCapture(e.pointerId);
-    this.canvas.style.cursor = this.spaceHeld ? 'grab' : '';
+    this.canvas.style.cursor = '';
   };
 
   private readonly onWheel = (e: WheelEvent): void => {
@@ -93,12 +88,6 @@ export class CameraControls {
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-    if (e.code === 'Space') {
-      this.spaceHeld = true;
-      if (!this.dragging) this.canvas.style.cursor = 'grab';
-      e.preventDefault();
-      return;
-    }
     if (e.code === 'Home') {
       this.onRecenter();
       return;
@@ -110,10 +99,6 @@ export class CameraControls {
   };
 
   private readonly onKeyUp = (e: KeyboardEvent): void => {
-    if (e.code === 'Space') {
-      this.spaceHeld = false;
-      if (!this.dragging) this.canvas.style.cursor = '';
-    }
     this.keys.delete(e.code);
   };
 }

@@ -30,7 +30,7 @@ body {
 
 .hud-panel {
   position: absolute;
-  background: rgba(16, 22, 29, 0.82);
+  background: rgba(16, 22, 29, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 10px 14px;
@@ -57,4 +57,114 @@ body {
   left: 12px;
   color: #b8c3cf;
   font-size: 12px;
+}
+
+button {
+  pointer-events: auto;
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+button.active {
+  background: #3f7fd0;
+  border-color: #6ea6ec;
+}
+
+.top-bar {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.top-money {
+  font-size: 17px;
+  font-weight: 600;
+  color: #9be29b;
+  min-width: 110px;
+}
+
+.top-money.negative {
+  color: #ff7a70;
+}
+
+.top-date {
+  min-width: 170px;
+}
+
+.speed-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.speed-buttons button {
+  min-width: 38px;
+  padding: 4px 8px;
+}
+
+.toolbar {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+}
+
+.toolbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 96px;
+}
+
+.toolbar small {
+  font-size: 11px;
+  color: #b8c3cf;
+}
+
+.toast {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(150, 40, 35, 0.92);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.toast.visible {
+  opacity: 1;
+}
+
+.cursor-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  background: rgba(16, 22, 29, 0.9);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cursor-label.error {
+  color: #ff8a80;
 }
