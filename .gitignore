@@ -4,4 +4,4 @@ dist/
 .DS_Store
 
 # ZIP originales de Kenney (lo que se usa ya está convertido en public/assets/kenney/)
-kenney/
+/kenney/

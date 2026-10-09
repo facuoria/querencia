@@ -1,0 +1,2592 @@
+{
+ "frames": {
+  "buildingTiles_000.png": {
+   "frame": {
+    "x": 596,
+    "y": 85,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_001.png": {
+   "frame": {
+    "x": 0,
+    "y": 1270,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_002.png": {
+   "frame": {
+    "x": 0,
+    "y": 1905,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_003.png": {
+   "frame": {
+    "x": 265,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_004.png": {
+   "frame": {
+    "x": 265,
+    "y": 127,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_005.png": {
+   "frame": {
+    "x": 596,
+    "y": 170,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_006.png": {
+   "frame": {
+    "x": 596,
+    "y": 224,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_007.png": {
+   "frame": {
+    "x": 596,
+    "y": 278,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_008.png": {
+   "frame": {
+    "x": 596,
+    "y": 363,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_009.png": {
+   "frame": {
+    "x": 265,
+    "y": 893,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_010.png": {
+   "frame": {
+    "x": 133,
+    "y": 1275,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_011.png": {
+   "frame": {
+    "x": 133,
+    "y": 1147,
+    "w": 132,
+    "h": 128
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 128
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 128
+   }
+  },
+  "buildingTiles_012.png": {
+   "frame": {
+    "x": 396,
+    "y": 1786,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_013.png": {
+   "frame": {
+    "x": 596,
+    "y": 766,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_014.png": {
+   "frame": {
+    "x": 396,
+    "y": 1913,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_015.png": {
+   "frame": {
+    "x": 596,
+    "y": 618,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_016.png": {
+   "frame": {
+    "x": 596,
+    "y": 533,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_017.png": {
+   "frame": {
+    "x": 265,
+    "y": 1659,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_018.png": {
+   "frame": {
+    "x": 265,
+    "y": 639,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_019.png": {
+   "frame": {
+    "x": 265,
+    "y": 381,
+    "w": 132,
+    "h": 128
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 128
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 128
+   }
+  },
+  "buildingTiles_020.png": {
+   "frame": {
+    "x": 133,
+    "y": 639,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_021.png": {
+   "frame": {
+    "x": 133,
+    "y": 385,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_022.png": {
+   "frame": {
+    "x": 0,
+    "y": 1397,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_023.png": {
+   "frame": {
+    "x": 596,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_024.png": {
+   "frame": {
+    "x": 595,
+    "y": 1641,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_025.png": {
+   "frame": {
+    "x": 133,
+    "y": 0,
+    "w": 132,
+    "h": 128
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 128
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 128
+   }
+  },
+  "buildingTiles_026.png": {
+   "frame": {
+    "x": 133,
+    "y": 128,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_027.png": {
+   "frame": {
+    "x": 133,
+    "y": 255,
+    "w": 132,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 130
+   }
+  },
+  "buildingTiles_028.png": {
+   "frame": {
+    "x": 133,
+    "y": 1659,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_029.png": {
+   "frame": {
+    "x": 265,
+    "y": 254,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_030.png": {
+   "frame": {
+    "x": 0,
+    "y": 254,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_031.png": {
+   "frame": {
+    "x": 595,
+    "y": 1230,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_032.png": {
+   "frame": {
+    "x": 595,
+    "y": 1145,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_033.png": {
+   "frame": {
+    "x": 265,
+    "y": 1020,
+    "w": 132,
+    "h": 128
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 128
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 128
+   }
+  },
+  "buildingTiles_034.png": {
+   "frame": {
+    "x": 133,
+    "y": 1402,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_035.png": {
+   "frame": {
+    "x": 133,
+    "y": 1529,
+    "w": 132,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 130
+   }
+  },
+  "buildingTiles_036.png": {
+   "frame": {
+    "x": 0,
+    "y": 762,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_037.png": {
+   "frame": {
+    "x": 0,
+    "y": 1016,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_038.png": {
+   "frame": {
+    "x": 397,
+    "y": 434,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_039.png": {
+   "frame": {
+    "x": 497,
+    "y": 945,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_040.png": {
+   "frame": {
+    "x": 265,
+    "y": 509,
+    "w": 132,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 130
+   }
+  },
+  "buildingTiles_041.png": {
+   "frame": {
+    "x": 265,
+    "y": 1148,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_042.png": {
+   "frame": {
+    "x": 0,
+    "y": 635,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_043.png": {
+   "frame": {
+    "x": 497,
+    "y": 681,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_044.png": {
+   "frame": {
+    "x": 397,
+    "y": 519,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_045.png": {
+   "frame": {
+    "x": 497,
+    "y": 536,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_046.png": {
+   "frame": {
+    "x": 265,
+    "y": 1402,
+    "w": 132,
+    "h": 130
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 130
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 130
+   }
+  },
+  "buildingTiles_047.png": {
+   "frame": {
+    "x": 397,
+    "y": 664,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_048.png": {
+   "frame": {
+    "x": 497,
+    "y": 329,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_049.png": {
+   "frame": {
+    "x": 397,
+    "y": 894,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_050.png": {
+   "frame": {
+    "x": 596,
+    "y": 448,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_051.png": {
+   "frame": {
+    "x": 397,
+    "y": 289,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_052.png": {
+   "frame": {
+    "x": 497,
+    "y": 60,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_053.png": {
+   "frame": {
+    "x": 397,
+    "y": 809,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_054.png": {
+   "frame": {
+    "x": 397,
+    "y": 979,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_055.png": {
+   "frame": {
+    "x": 496,
+    "y": 1632,
+    "w": 99,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 85
+   }
+  },
+  "buildingTiles_056.png": {
+   "frame": {
+    "x": 397,
+    "y": 1064,
+    "w": 100,
+    "h": 85
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 85
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 85
+   }
+  },
+  "buildingTiles_057.png": {
+   "frame": {
+    "x": 496,
+    "y": 1511,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_058.png": {
+   "frame": {
+    "x": 496,
+    "y": 1451,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_059.png": {
+   "frame": {
+    "x": 496,
+    "y": 1391,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_060.png": {
+   "frame": {
+    "x": 496,
+    "y": 1331,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_061.png": {
+   "frame": {
+    "x": 497,
+    "y": 1030,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_062.png": {
+   "frame": {
+    "x": 496,
+    "y": 1209,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_063.png": {
+   "frame": {
+    "x": 496,
+    "y": 1149,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_064.png": {
+   "frame": {
+    "x": 497,
+    "y": 621,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_065.png": {
+   "frame": {
+    "x": 497,
+    "y": 414,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_066.png": {
+   "frame": {
+    "x": 497,
+    "y": 269,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_067.png": {
+   "frame": {
+    "x": 397,
+    "y": 749,
+    "w": 100,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 60
+   }
+  },
+  "buildingTiles_068.png": {
+   "frame": {
+    "x": 497,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_069.png": {
+   "frame": {
+    "x": 496,
+    "y": 1717,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_070.png": {
+   "frame": {
+    "x": 496,
+    "y": 1571,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_071.png": {
+   "frame": {
+    "x": 496,
+    "y": 1269,
+    "w": 99,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 62
+   }
+  },
+  "buildingTiles_072.png": {
+   "frame": {
+    "x": 397,
+    "y": 374,
+    "w": 100,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 60
+   }
+  },
+  "buildingTiles_073.png": {
+   "frame": {
+    "x": 397,
+    "y": 1698,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_074.png": {
+   "frame": {
+    "x": 397,
+    "y": 1209,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_075.png": {
+   "frame": {
+    "x": 397,
+    "y": 1149,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_076.png": {
+   "frame": {
+    "x": 596,
+    "y": 703,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_077.png": {
+   "frame": {
+    "x": 397,
+    "y": 1455,
+    "w": 99,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 62
+   }
+  },
+  "buildingTiles_078.png": {
+   "frame": {
+    "x": 233,
+    "y": 1786,
+    "w": 13,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 13,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 13,
+    "h": 24
+   }
+  },
+  "buildingTiles_079.png": {
+   "frame": {
+    "x": 397,
+    "y": 227,
+    "w": 100,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 62
+   }
+  },
+  "buildingTiles_080.png": {
+   "frame": {
+    "x": 397,
+    "y": 604,
+    "w": 100,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 60
+   }
+  },
+  "buildingTiles_081.png": {
+   "frame": {
+    "x": 397,
+    "y": 1517,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_082.png": {
+   "frame": {
+    "x": 397,
+    "y": 1270,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_083.png": {
+   "frame": {
+    "x": 397,
+    "y": 1637,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_084.png": {
+   "frame": {
+    "x": 497,
+    "y": 206,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_085.png": {
+   "frame": {
+    "x": 0,
+    "y": 127,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_086.png": {
+   "frame": {
+    "x": 397,
+    "y": 172,
+    "w": 100,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 55
+   }
+  },
+  "buildingTiles_087.png": {
+   "frame": {
+    "x": 397,
+    "y": 110,
+    "w": 100,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 62
+   }
+  },
+  "buildingTiles_088.png": {
+   "frame": {
+    "x": 497,
+    "y": 145,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_089.png": {
+   "frame": {
+    "x": 397,
+    "y": 1577,
+    "w": 99,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 60
+   }
+  },
+  "buildingTiles_090.png": {
+   "frame": {
+    "x": 397,
+    "y": 1331,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_091.png": {
+   "frame": {
+    "x": 397,
+    "y": 1394,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_092.png": {
+   "frame": {
+    "x": 0,
+    "y": 1778,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_093.png": {
+   "frame": {
+    "x": 265,
+    "y": 1532,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_094.png": {
+   "frame": {
+    "x": 133,
+    "y": 1786,
+    "w": 100,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 55
+   }
+  },
+  "buildingTiles_095.png": {
+   "frame": {
+    "x": 133,
+    "y": 1841,
+    "w": 100,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 55
+   }
+  },
+  "buildingTiles_096.png": {
+   "frame": {
+    "x": 497,
+    "y": 475,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_097.png": {
+   "frame": {
+    "x": 497,
+    "y": 766,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_098.png": {
+   "frame": {
+    "x": 497,
+    "y": 827,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_099.png": {
+   "frame": {
+    "x": 0,
+    "y": 381,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_100.png": {
+   "frame": {
+    "x": 0,
+    "y": 508,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_101.png": {
+   "frame": {
+    "x": 265,
+    "y": 766,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_102.png": {
+   "frame": {
+    "x": 397,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 55
+   }
+  },
+  "buildingTiles_103.png": {
+   "frame": {
+    "x": 497,
+    "y": 890,
+    "w": 99,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 55
+   }
+  },
+  "buildingTiles_104.png": {
+   "frame": {
+    "x": 528,
+    "y": 1777,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_105.png": {
+   "frame": {
+    "x": 528,
+    "y": 1840,
+    "w": 99,
+    "h": 61
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 61
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 61
+   }
+  },
+  "buildingTiles_106.png": {
+   "frame": {
+    "x": 0,
+    "y": 889,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_107.png": {
+   "frame": {
+    "x": 0,
+    "y": 1651,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_108.png": {
+   "frame": {
+    "x": 264,
+    "y": 1913,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_109.png": {
+   "frame": {
+    "x": 264,
+    "y": 1786,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_110.png": {
+   "frame": {
+    "x": 397,
+    "y": 55,
+    "w": 100,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 100,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 100,
+    "h": 55
+   }
+  },
+  "buildingTiles_111.png": {
+   "frame": {
+    "x": 497,
+    "y": 1090,
+    "w": 99,
+    "h": 55
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 55
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 55
+   }
+  },
+  "buildingTiles_112.png": {
+   "frame": {
+    "x": 528,
+    "y": 1901,
+    "w": 99,
+    "h": 63
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 63
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 63
+   }
+  },
+  "buildingTiles_113.png": {
+   "frame": {
+    "x": 265,
+    "y": 1275,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_114.png": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_115.png": {
+   "frame": {
+    "x": 0,
+    "y": 1524,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_116.png": {
+   "frame": {
+    "x": 133,
+    "y": 893,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_117.png": {
+   "frame": {
+    "x": 133,
+    "y": 766,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_118.png": {
+   "frame": {
+    "x": 528,
+    "y": 1964,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_119.png": {
+   "frame": {
+    "x": 595,
+    "y": 1315,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_120.png": {
+   "frame": {
+    "x": 595,
+    "y": 1369,
+    "w": 99,
+    "h": 56
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 56
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 56
+   }
+  },
+  "buildingTiles_121.png": {
+   "frame": {
+    "x": 595,
+    "y": 1425,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_122.png": {
+   "frame": {
+    "x": 0,
+    "y": 1143,
+    "w": 133,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 127
+   }
+  },
+  "buildingTiles_123.png": {
+   "frame": {
+    "x": 133,
+    "y": 1020,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_124.png": {
+   "frame": {
+    "x": 132,
+    "y": 1905,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_125.png": {
+   "frame": {
+    "x": 133,
+    "y": 512,
+    "w": 132,
+    "h": 127
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 127
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 127
+   }
+  },
+  "buildingTiles_126.png": {
+   "frame": {
+    "x": 595,
+    "y": 1479,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_127.png": {
+   "frame": {
+    "x": 595,
+    "y": 1533,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  },
+  "buildingTiles_128.png": {
+   "frame": {
+    "x": 595,
+    "y": 1587,
+    "w": 99,
+    "h": 54
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 99,
+    "h": 54
+   },
+   "sourceSize": {
+    "w": 99,
+    "h": 54
+   }
+  }
+ },
+ "meta": {
+  "image": "buildingTiles_sheet.png",
+  "size": {
+   "w": 1024,
+   "h": 2048
+  },
+  "scale": "1"
+ }
+}
