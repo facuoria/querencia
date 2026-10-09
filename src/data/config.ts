@@ -146,6 +146,7 @@ export const COLORS = {
   previewExisting: 0xcfd8e3,
   previewInvalid: 0xff5a4f,
   previewDemolish: 0xffa23a,
+  previewRadius: 0x7fd3ff,
   zoneResidential: 0x5fd35f,
   zoneCommercial: 0x4f9bff,
   zoneIndustrial: 0xf2c53d,

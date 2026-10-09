@@ -122,3 +122,26 @@ export const BUILDING_STYLES = {
     flatRoofs: FLAT_ROOFS,
   },
 } as const;
+
+/** Edificios de servicio: base, piso que se repite, cantidad de pisos por nivel y techo (null = sin techo). */
+export interface ServiceSprite {
+  base: string;
+  floor: string;
+  floorsByLevel: readonly [number, number, number];
+  roof: string | null;
+}
+
+export const SERVICE_SPRITES: Record<number, ServiceSprite> = {
+  1: { base: b(93), floor: b(50), floorsByLevel: [0, 1, 2], roof: b(89) }, // Planta eléctrica
+  2: { base: b(85), floor: b(53), floorsByLevel: [0, 1, 1], roof: b(86) }, // Pozo de agua
+  3: { base: b(92), floor: b(52), floorsByLevel: [0, 1, 2], roof: b(91) }, // Planta de gas
+  4: { base: b(19), floor: b(55), floorsByLevel: [2, 3, 4], roof: b(94) }, // Hospital
+  5: { base: b(30), floor: b(49), floorsByLevel: [0, 1, 2], roof: b(69) }, // Colegio
+  6: { base: b(36), floor: b(43), floorsByLevel: [2, 3, 4], roof: b(87) }, // Universidad
+  8: { base: b(40), floor: b(54), floorsByLevel: [0, 1, 2], roof: b(95) }, // Bomberos
+  9: { base: b(46), floor: b(31), floorsByLevel: [1, 2, 3], roof: b(79) }, // Policía
+};
+
+/** Parque: plaza con pasto y árboles (más árboles en cada nivel). */
+export const PARK_SPRITE = 'cityTiles_059.png';
+export const PARK_TREES_BY_LEVEL = [3, 5, 7] as const;

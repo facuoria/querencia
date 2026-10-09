@@ -31,8 +31,11 @@ class BoxSum {
   }
 }
 
-/** Valor del suelo de 0 a 1 por casilla. Sube cerca del agua, el bosque y los buenos barrios; baja cerca de la industria. */
-export function computeLandValue(state: CityState, out: Float32Array): void {
+/**
+ * Valor del suelo de 0 a 1 por casilla. Sube cerca del agua, el bosque, los servicios y los buenos barrios;
+ * baja cerca de la industria y las plantas.
+ */
+export function computeLandValue(state: CityState, out: Float32Array, serviceBonus?: Float32Array): void {
   const n = state.size;
   const lv = LAND_VALUE;
   const water = new BoxSum(n, (i) => (state.terrain[i] === Terrain.Water ? 1 : 0));
@@ -49,6 +52,7 @@ export function computeLandValue(state: CityState, out: Float32Array): void {
       v += Math.min(1, water.average(x, y, lv.waterRadius) * 4) * lv.waterBonus;
       v += Math.min(1, forest.average(x, y, lv.forestRadius) * 3) * lv.forestBonus;
       v += Math.min(1, levels.average(x, y, lv.neighborhoodRadius) * 2) * lv.neighborhoodBonus;
+      v += serviceBonus?.[i] ?? 0;
       if (state.zones[i] !== Zone.Industrial) {
         v -= Math.min(1, industry.average(x, y, lv.industryRadius) * 4) * lv.industryPenalty;
       }

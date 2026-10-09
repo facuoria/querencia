@@ -1,8 +1,10 @@
 import type { CityState, Demand } from '../core/cityState';
 import { Terrain, Zone } from '../core/types';
 import { CAPACITY, DEMAND, GROWTH } from '../data/config';
+import { SERVICE_RULES } from '../data/services';
 import { computeLandValue } from './landValue';
 import { RoadNetwork } from './network';
+import { ServiceSim } from './services';
 
 /** Cada cuántos días se recalcula el valor del suelo. */
 const LAND_VALUE_EVERY_DAYS = 5;
@@ -33,6 +35,7 @@ export function capacityOf(zone: number, level: number): number {
  */
 export class GrowthSim {
   readonly network: RoadNetwork;
+  readonly services: ServiceSim;
   readonly landValue: Float32Array;
   private daysSinceLandValue = LAND_VALUE_EVERY_DAYS;
 
@@ -41,20 +44,24 @@ export class GrowthSim {
     private readonly random: () => number = Math.random,
   ) {
     this.network = new RoadNetwork(state);
+    this.services = new ServiceSim(state, this.network);
     this.landValue = new Float32Array(state.size * state.size);
   }
 
   /** Recalcula conexiones y totales sin avanzar el tiempo (por ejemplo, después de construir). */
   refresh(): void {
     this.network.update();
+    this.services.update();
+    computeLandValue(this.state, this.landValue, this.services.landBonus);
     this.updateStats();
   }
 
   dailyTick(): void {
     this.network.update();
+    this.services.update();
     if (++this.daysSinceLandValue >= LAND_VALUE_EVERY_DAYS) {
       this.daysSinceLandValue = 0;
-      computeLandValue(this.state, this.landValue);
+      computeLandValue(this.state, this.landValue, this.services.landBonus);
     }
     this.updateStats();
     this.decay();
@@ -126,15 +133,19 @@ export class GrowthSim {
       const x = i % st.size;
       const y = (i - x) / st.size;
       const level = st.buildingLevel[i]!;
+      const sv = this.services;
       if (level === 0) {
-        if (this.random() < GROWTH.buildChance * demand) {
+        if (sv.canBuild(i, zone) && this.random() < GROWTH.buildChance * demand) {
           if (st.terrain[i] === Terrain.Forest) st.setTerrain(x, y, Terrain.Grass);
           st.setLevel(x, y, 1);
+          sv.reserve(i, zone, 0, 1);
         }
-      } else if (level < maxLevel) {
+      } else if (level < maxLevel && sv.hasBasicSupply(i)) {
         const needed = GROWTH.landValueForLevel[level + 1] ?? 1;
-        if (this.landValue[i]! >= needed && this.random() < GROWTH.upgradeChance * demand) {
+        const gasOk = level + 1 < 3 || sv.canReachLevel3(i, zone);
+        if (gasOk && this.landValue[i]! >= needed && this.random() < GROWTH.upgradeChance * demand) {
           st.setLevel(x, y, level + 1);
+          sv.reserve(i, zone, level, level + 1);
         }
       }
     }
@@ -156,6 +167,7 @@ export class GrowthSim {
       const y = (i - x) / st.size;
       let chance = 0;
       if (!this.network.hasAccess(x, y)) chance = GROWTH.decayWithoutAccess;
+      else if (!this.services.hasBasicSupply(i)) chance = SERVICE_RULES.decayWithoutSupply;
       else if ((demandOf[st.zones[i]!] ?? 0) < GROWTH.decayDemand) chance = GROWTH.decayChance;
       if (chance > 0 && this.random() < chance) st.setLevel(x, y, level - 1);
     }

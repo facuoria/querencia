@@ -1,12 +1,20 @@
 import { Container, Graphics, GraphicsContext, Sprite } from 'pixi.js';
 import type { CityState } from '../core/cityState';
 import { hash2 } from '../core/noise';
-import { Road, Terrain, Zone } from '../core/types';
+import { Road, ServiceType, Terrain, Zone } from '../core/types';
 import { COLORS } from '../data/config';
-import { HIGHWAY_SPRITES, ROAD_SPRITES, SPRITE_ORIGIN, TERRAIN_SPRITES, TREE_SPRITE } from '../data/sprites';
+import {
+  HIGHWAY_SPRITES,
+  PARK_SPRITE,
+  PARK_TREES_BY_LEVEL,
+  ROAD_SPRITES,
+  SPRITE_ORIGIN,
+  TERRAIN_SPRITES,
+  TREE_SPRITE,
+} from '../data/sprites';
 import { roadMask } from '../sim/roads';
 import { tex } from './assets';
-import { createBuilding } from './buildingView';
+import { createBuilding, createService } from './buildingView';
 import type { ViewRect } from './camera';
 import { HALF_H, HALF_W, tileDiamond, tileToWorld } from './iso';
 
@@ -40,8 +48,13 @@ export class MapRenderer {
   /** Contenedor de cada casilla, por índice. */
   private readonly tiles: Container[] = [];
   private readonly zoneMarks: Record<number, GraphicsContext> = {};
+  private roadsVersion = -1;
 
-  constructor(private readonly state: CityState) {
+  /** isServiceWorking: si el servicio de esa casilla funciona (lo decide la simulación). */
+  constructor(
+    private readonly state: CityState,
+    private readonly isServiceWorking: (x: number, y: number) => boolean,
+  ) {
     const n = state.size;
     for (const [zone, color] of [
       [Zone.Residential, COLORS.zoneResidential],
@@ -86,9 +99,16 @@ export class MapRenderer {
 
   /** Aplica los cambios del estado desde el último cuadro. */
   sync(): void {
-    for (const idx of this.state.takeChanges()) {
-      const x = idx % this.state.size;
-      this.buildTile(x, (idx - x) / this.state.size);
+    const st = this.state;
+    const changes = new Set(st.takeChanges());
+    // Con otra red de calles, un servicio puede pasar a funcionar o dejar de hacerlo.
+    if (st.roadsVersion !== this.roadsVersion) {
+      this.roadsVersion = st.roadsVersion;
+      for (let i = 0; i < st.service.length; i++) if (st.service[i] !== ServiceType.None) changes.add(i);
+    }
+    for (const idx of changes) {
+      const x = idx % st.size;
+      this.buildTile(x, (idx - x) / st.size);
     }
   }
 
@@ -118,9 +138,19 @@ export class MapRenderer {
     c.tint = st.isTileUnlocked(x, y) ? 0xffffff : COLORS.lockedTint;
 
     const top = tileToWorld(x, y);
-    const ground = new Sprite(tex(this.groundSprite(x, y)));
+    const service = st.getService(x, y);
+    const ground = new Sprite(tex(service === ServiceType.Park ? PARK_SPRITE : this.groundSprite(x, y)));
     ground.position.set(top.x - SPRITE_ORIGIN.x, top.y - SPRITE_ORIGIN.y);
     c.addChild(ground);
+
+    if (service === ServiceType.Park) {
+      this.addTrees(c, x, y, PARK_TREES_BY_LEVEL[st.getServiceLevel(x, y) - 1] ?? 3);
+      return;
+    }
+    if (service !== ServiceType.None) {
+      c.addChild(createService(service, st.getServiceLevel(x, y), x, y, this.isServiceWorking(x, y)));
+      return;
+    }
 
     const zone = st.getZone(x, y);
     const level = st.getLevel(x, y);
@@ -151,9 +181,9 @@ export class MapRenderer {
   }
 
   /** Árboles de una casilla de bosque, ordenados de atrás hacia adelante. */
-  private addTrees(c: Container, x: number, y: number): void {
+  private addTrees(c: Container, x: number, y: number, fixedCount?: number): void {
     const center = tileToWorld(x + 0.5, y + 0.5);
-    const count = 2 + Math.floor(hash2(x, y, 21) * 3);
+    const count = fixedCount ?? 2 + Math.floor(hash2(x, y, 21) * 3);
     const trees: Array<{ px: number; py: number; i: number }> = [];
     for (let i = 0; i < count; i++) {
       // Posición al azar dentro del rombo, en coordenadas de casilla.

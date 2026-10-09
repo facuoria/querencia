@@ -21,6 +21,20 @@ export const Zone = {
 } as const;
 export type Zone = (typeof Zone)[keyof typeof Zone];
 
+export const ServiceType = {
+  None: 0,
+  Power: 1,
+  Water: 2,
+  Gas: 3,
+  Hospital: 4,
+  School: 5,
+  University: 6,
+  Park: 7,
+  Fire: 8,
+  Police: 9,
+} as const;
+export type ServiceType = (typeof ServiceType)[keyof typeof ServiceType];
+
 export interface TileCoord {
   x: number;
   y: number;

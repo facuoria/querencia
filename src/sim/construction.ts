@@ -1,6 +1,7 @@
 import type { CityState } from '../core/cityState';
-import { Road, Terrain, Zone, type TileCoord } from '../core/types';
+import { Road, ServiceType, Terrain, Zone, type TileCoord } from '../core/types';
 import { COSTS } from '../data/config';
+import { SERVICES, investedIn } from '../data/services';
 import { TEXTS } from '../data/texts';
 
 export const TileStatus = {
@@ -67,7 +68,7 @@ export function planRoad(state: CityState, path: TileCoord[]): Plan {
       error ??= TEXTS.errors.water;
       return { ...p, status: TileStatus.Invalid };
     }
-    if (state.getLevel(p.x, p.y) > 0) {
+    if (state.getLevel(p.x, p.y) > 0 || state.getService(p.x, p.y) !== ServiceType.None) {
       error ??= TEXTS.errors.building;
       return { ...p, status: TileStatus.Invalid };
     }
@@ -103,6 +104,7 @@ export function planZone(state: CityState, area: TileCoord[], zone: Zone): Plan 
     if (!state.inBounds(p.x, p.y)) continue;
     if (state.getRoad(p.x, p.y) !== Road.None) continue;
     if (state.getTerrain(p.x, p.y) === Terrain.Water || !state.isTileUnlocked(p.x, p.y)) continue;
+    if (state.getService(p.x, p.y) !== ServiceType.None) continue;
     const current = state.getZone(p.x, p.y);
     if (current === zone) {
       tiles.push({ ...p, status: TileStatus.Existing });
@@ -143,14 +145,18 @@ export function planDemolish(state: CityState, area: TileCoord[]): Plan {
       continue;
     }
     const zoned = state.getZone(p.x, p.y) !== Zone.None;
-    const hasSomething = road === Road.Street || zoned || state.getTerrain(p.x, p.y) === Terrain.Forest;
+    const service = state.getService(p.x, p.y);
+    const hasSomething =
+      road === Road.Street || zoned || service !== ServiceType.None || state.getTerrain(p.x, p.y) === Terrain.Forest;
     if (!hasSomething) continue;
     if (!state.isTileUnlocked(p.x, p.y)) {
       tiles.push({ ...p, status: TileStatus.Invalid });
       continue;
     }
     if (road === Road.Street) cost -= COSTS.road * COSTS.demolishRefund;
-    else if (zoned) cost -= COSTS.zone * COSTS.demolishRefund;
+    else if (service !== ServiceType.None) {
+      cost -= investedIn(SERVICES[service], state.getServiceLevel(p.x, p.y)) * COSTS.demolishRefund;
+    } else if (zoned) cost -= COSTS.zone * COSTS.demolishRefund;
     count++;
     tiles.push({ ...p, status: TileStatus.Ok });
   }
@@ -164,9 +170,51 @@ export function demolish(state: CityState, plan: Plan): string | null {
   for (const t of plan.tiles) {
     if (t.status !== TileStatus.Ok) continue;
     if (state.getRoad(t.x, t.y) === Road.Street) state.setRoad(t.x, t.y, Road.None);
+    else if (state.getService(t.x, t.y) !== ServiceType.None) state.setService(t.x, t.y, ServiceType.None);
     else if (state.getZone(t.x, t.y) !== Zone.None) state.setZone(t.x, t.y, Zone.None);
     else if (state.getTerrain(t.x, t.y) === Terrain.Forest) state.setTerrain(t.x, t.y, Terrain.Grass);
   }
   state.money -= plan.cost;
+  return null;
+}
+
+/** Ubicar un edificio de servicio en una casilla libre (pasto, bosque o lote vacío). */
+export function planService(state: CityState, p: TileCoord, type: Exclude<ServiceType, 0>): Plan {
+  const def = SERVICES[type];
+  const fail = (error: string): Plan => ({ tiles: [{ ...p, status: TileStatus.Invalid }], cost: def.cost, error });
+  if (!state.inBounds(p.x, p.y)) return fail(TEXTS.errors.occupied);
+  if (!state.isTileUnlocked(p.x, p.y)) return fail(TEXTS.errors.locked);
+  if (state.getTerrain(p.x, p.y) === Terrain.Water) return fail(TEXTS.errors.water);
+  const busy =
+    state.getRoad(p.x, p.y) !== Road.None ||
+    state.getService(p.x, p.y) !== ServiceType.None ||
+    state.getLevel(p.x, p.y) > 0;
+  if (busy) return fail(TEXTS.errors.occupied);
+  if (def.cost > state.money) return fail(TEXTS.errors.noMoney);
+  return { tiles: [{ ...p, status: TileStatus.Ok }], cost: def.cost, error: null };
+}
+
+export function buildService(state: CityState, plan: Plan, type: Exclude<ServiceType, 0>): string | null {
+  if (plan.error) return plan.error;
+  const t = plan.tiles[0]!;
+  if (state.getTerrain(t.x, t.y) === Terrain.Forest) state.setTerrain(t.x, t.y, Terrain.Grass);
+  state.setService(t.x, t.y, type, 1);
+  state.money -= plan.cost;
+  return null;
+}
+
+/** Costo de mejorar el servicio de una casilla, o null si no hay servicio o ya está al máximo. */
+export function upgradeCost(state: CityState, x: number, y: number): number | null {
+  const type = state.getService(x, y);
+  if (type === ServiceType.None) return null;
+  return SERVICES[type].upgradeCost[state.getServiceLevel(x, y) - 1] ?? null;
+}
+
+export function upgradeService(state: CityState, x: number, y: number): string | null {
+  const cost = upgradeCost(state, x, y);
+  if (cost === null) return TEXTS.services.maxLevel;
+  if (cost > state.money) return TEXTS.errors.noMoney;
+  state.setService(x, y, state.getService(x, y), state.getServiceLevel(x, y) + 1);
+  state.money -= cost;
   return null;
 }

@@ -12,9 +12,10 @@ export class Overlay {
 
   constructor(private readonly state: CityState) {}
 
-  update(hover: TileCoord | null, plan: Plan | null, demolishing: boolean): void {
+  /** radius: si es mayor que 0, se marca el área que cubriría el servicio que se está ubicando. */
+  update(hover: TileCoord | null, plan: Plan | null, demolishing: boolean, radius = 0): void {
     const key = plan
-      ? `p${demolishing ? 'd' : 'b'}${plan.error ?? ''}:${plan.tiles.map((t) => `${t.x},${t.y},${t.status}`).join(';')}`
+      ? `p${demolishing ? 'd' : 'b'}${radius}${plan.error ?? ''}:${plan.tiles.map((t) => `${t.x},${t.y},${t.status}`).join(';')}`
       : hover
         ? `h${hover.x},${hover.y}`
         : '';
@@ -24,6 +25,15 @@ export class Overlay {
     const g = this.graphics;
     g.clear();
     if (plan) {
+      const center = plan.tiles[0];
+      if (radius > 0 && center) {
+        for (let y = center.y - radius; y <= center.y + radius; y++) {
+          for (let x = center.x - radius; x <= center.x + radius; x++) {
+            if (!this.state.inBounds(x, y) || Math.hypot(x - center.x, y - center.y) > radius) continue;
+            g.poly(tileDiamond(x, y)).fill({ color: COLORS.previewRadius, alpha: 0.16 });
+          }
+        }
+      }
       for (const t of plan.tiles) {
         const color =
           t.status === TileStatus.Invalid

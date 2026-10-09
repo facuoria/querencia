@@ -9,12 +9,14 @@ import { Tool, ToolController } from './input/tools';
 import { loadAssets } from './render/assets';
 import { Camera } from './render/camera';
 import { tileToWorld, worldToTile } from './render/iso';
+import { Heatmap } from './render/heatmap';
 import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
 import { GameClock } from './sim/clock';
 import { GrowthSim } from './sim/growth';
 import { DemandPanel } from './ui/demandPanel';
 import { Hud } from './ui/hud';
+import { MapsPanel, ServiceBar, ServiceInfo } from './ui/servicePanels';
 import { CursorLabel, Toast } from './ui/toast';
 import { Toolbar } from './ui/toolbar';
 import { TopBar, formatMoney } from './ui/topBar';
@@ -45,9 +47,19 @@ async function start(): Promise<void> {
   if (import.meta.env.DEV) Object.assign(window, { city: { state, growth } });
 
   const world = new Container();
-  const mapRenderer = new MapRenderer(state);
+  const mapRenderer = new MapRenderer(state, (x, y) => {
+    growth.network.update();
+    return growth.services.isWorking(x, y);
+  });
+  const heatmap = new Heatmap(state, growth);
   const overlay = new Overlay(state);
-  world.addChild(mapRenderer.layer, mapRenderer.gridLayer, mapRenderer.borderLayer, overlay.graphics);
+  world.addChild(
+    mapRenderer.layer,
+    heatmap.graphics,
+    mapRenderer.gridLayer,
+    mapRenderer.borderLayer,
+    overlay.graphics,
+  );
   app.stage.addChild(world);
 
   // La cámara puede moverse dentro del rombo que ocupa el mapa.
@@ -79,15 +91,22 @@ async function start(): Promise<void> {
     app.canvas,
     state,
     (msg) => toast.show(msg),
-    () => growth.refresh(),
+    () => {
+      growth.refresh();
+      heatmap.redraw();
+    },
   );
   const toolbar = new Toolbar(uiRoot, tools);
+  const serviceBar = new ServiceBar(uiRoot, tools);
+  const mapsPanel = new MapsPanel(uiRoot, growth, heatmap);
+  const serviceInfo = new ServiceInfo(uiRoot, state, growth, tools, heatmap, (msg) => toast.show(msg));
   installShortcuts(tools, clock);
 
   app.ticker.add((ticker) => {
     const dt = Math.min(ticker.deltaMS, MAX_FRAME_MS);
     const days = clock.update(dt);
     for (let i = 0; i < days; i++) growth.dailyTick();
+    if (days > 0 && heatmap.mode !== null) heatmap.redraw();
     controls.update(dt);
     camera.apply();
     mapRenderer.cull(camera.viewRect());
@@ -101,7 +120,8 @@ async function start(): Promise<void> {
     tools.setHover(tile);
     mapRenderer.sync();
     mapRenderer.gridVisible = tools.tool !== Tool.Select;
-    overlay.update(tile, tools.plan, tools.tool === Tool.Demolish);
+    const radius = tools.tool === Tool.Service ? growth.services.radiusOf(tools.serviceType, 1) : 0;
+    overlay.update(tile, tools.plan, tools.tool === Tool.Demolish, radius);
 
     const plan = tools.plan;
     const label = plan ? (plan.error ?? (plan.cost < 0 ? `+${formatMoney(-plan.cost)}` : formatMoney(plan.cost))) : null;
@@ -111,6 +131,9 @@ async function start(): Promise<void> {
     topBar.update();
     demandPanel.update();
     toolbar.update();
+    serviceBar.update();
+    mapsPanel.update();
+    serviceInfo.update();
   });
 }
 

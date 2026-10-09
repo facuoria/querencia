@@ -260,3 +260,113 @@ button.active {
 .toolbar button.zone-ind {
   border-bottom: 3px solid #f2c53d;
 }
+
+.service-bar {
+  bottom: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+}
+
+.service-bar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 72px;
+  padding: 4px 6px;
+}
+
+.service-bar small {
+  font-size: 10px;
+  color: #b8c3cf;
+  white-space: nowrap;
+}
+
+.service-icon {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.maps-panel {
+  top: 176px;
+  right: 12px;
+  width: 210px;
+}
+
+.utility-row {
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.utility-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.utility-fill {
+  height: 100%;
+  background: #4fd16b;
+}
+
+.utility-fill.deficit {
+  background: #e5483b;
+}
+
+.utility-label.deficit {
+  color: #ff7a70;
+  font-weight: 600;
+}
+
+.maps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.maps-grid button {
+  padding: 3px 0;
+  font-size: 14px;
+}
+
+.maps-grid button:first-child {
+  grid-column: span 4;
+  font-size: 12px;
+}
+
+.service-info {
+  top: 160px;
+  left: 12px;
+  min-width: 220px;
+  display: none;
+}
+
+.service-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.service-body {
+  white-space: pre-line;
+  margin-bottom: 8px;
+}
+
+.service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

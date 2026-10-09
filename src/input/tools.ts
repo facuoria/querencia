@@ -1,12 +1,14 @@
 import type { CityState } from '../core/cityState';
-import { Zone, type TileCoord } from '../core/types';
+import { ServiceType, Zone, type TileCoord } from '../core/types';
 import {
   applyZone,
   buildRoad,
+  buildService,
   demolish,
   lPath,
   planDemolish,
   planRoad,
+  planService,
   planZone,
   rectArea,
   type Plan,
@@ -18,6 +20,7 @@ export const Tool = {
   Residential: 'residential',
   Commercial: 'commercial',
   Industrial: 'industrial',
+  Service: 'service',
   Demolish: 'demolish',
 } as const;
 export type Tool = (typeof Tool)[keyof typeof Tool];
@@ -34,8 +37,12 @@ const ZONE_OF_TOOL: Partial<Record<Tool, Zone>> = {
  */
 export class ToolController {
   tool: Tool = Tool.Select;
+  /** Servicio que coloca la herramienta Service. */
+  serviceType: Exclude<ServiceType, 0> = ServiceType.Power;
   /** Plan en curso mientras se arrastra, para la vista previa. */
   plan: Plan | null = null;
+  /** Casilla elegida con la herramienta Seleccionar. */
+  selected: TileCoord | null = null;
   private dragStart: TileCoord | null = null;
   private hover: TileCoord | null = null;
 
@@ -59,6 +66,11 @@ export class ToolController {
     this.cancel();
   }
 
+  setService(type: Exclude<ServiceType, 0>): void {
+    this.serviceType = type;
+    this.setTool(Tool.Service);
+  }
+
   /** Zona que pinta la herramienta actual, si es una herramienta de zonas. */
   get zone(): Zone | null {
     return ZONE_OF_TOOL[this.tool] ?? null;
@@ -68,6 +80,7 @@ export class ToolController {
   setHover(tile: TileCoord | null): void {
     this.hover = tile;
     if (this.dragStart && tile) this.plan = this.makePlan(this.dragStart, tile);
+    else if (this.tool === Tool.Service) this.plan = tile ? planService(this.state, tile, this.serviceType) : null;
   }
 
   cancel(): void {
@@ -76,28 +89,37 @@ export class ToolController {
   }
 
   private begin(): void {
-    if (this.tool === Tool.Select || !this.hover) return;
+    if (this.tool === Tool.Select) {
+      this.selected = this.hover ? { ...this.hover } : null;
+      return;
+    }
+    if (!this.hover) return;
     this.dragStart = { ...this.hover };
     this.plan = this.makePlan(this.dragStart, this.hover);
   }
 
   private finish(): void {
+    // Solo cuenta si el clic empezó sobre el mapa (no al soltar sobre un botón de la interfaz).
+    if (!this.dragStart) return;
     const plan = this.plan;
     this.cancel();
     if (!plan) return;
-    const zone = this.zone;
-    const error =
-      this.tool === Tool.Road
-        ? buildRoad(this.state, plan)
-        : zone !== null
-          ? applyZone(this.state, plan, zone)
-          : demolish(this.state, plan);
+    const error = this.apply(plan);
     if (error) this.onError(error);
     else this.onChange();
   }
 
+  private apply(plan: Plan): string | null {
+    if (this.tool === Tool.Road) return buildRoad(this.state, plan);
+    if (this.tool === Tool.Service) return buildService(this.state, plan, this.serviceType);
+    const zone = this.zone;
+    if (zone !== null) return applyZone(this.state, plan, zone);
+    return demolish(this.state, plan);
+  }
+
   private makePlan(from: TileCoord, to: TileCoord): Plan {
     if (this.tool === Tool.Road) return planRoad(this.state, lPath(from, to));
+    if (this.tool === Tool.Service) return planService(this.state, to, this.serviceType);
     const zone = this.zone;
     if (zone !== null) return planZone(this.state, rectArea(from, to), zone);
     return planDemolish(this.state, rectArea(from, to));

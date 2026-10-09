@@ -1,5 +1,5 @@
 import { ECONOMY, MAP } from '../data/config';
-import { Road, Terrain, Zone, type TileCoord } from './types';
+import { Road, ServiceType, Terrain, Zone, type TileCoord } from './types';
 
 export interface Demand {
   residential: number;
@@ -25,6 +25,9 @@ export class CityState {
   readonly zones: Uint8Array;
   /** Nivel del edificio de cada casilla zonificada: 0 = lote vacío, 1 a 3 = edificio. */
   readonly buildingLevel: Uint8Array;
+  /** Edificio de servicio de cada casilla y su nivel (1 a 3). */
+  readonly service: Uint8Array;
+  readonly serviceLevel: Uint8Array;
   readonly unlockedSectors: Uint8Array;
   /** Habitantes de cada sector (barrio). */
   readonly sectorPopulation: Float64Array;
@@ -33,6 +36,8 @@ export class CityState {
   day = 0;
   /** Sube cada vez que cambia la red de calles, para recalcular conexiones. */
   roadsVersion = 0;
+  /** Sube cada vez que se construye, mejora o demuele un servicio. */
+  servicesVersion = 0;
   stats: CityStats = {
     population: 0,
     commercialJobs: 0,
@@ -51,6 +56,8 @@ export class CityState {
     this.roads = new Uint8Array(n);
     this.zones = new Uint8Array(n);
     this.buildingLevel = new Uint8Array(n);
+    this.service = new Uint8Array(n);
+    this.serviceLevel = new Uint8Array(n);
     this.unlockedSectors = new Uint8Array(this.sectorsPerSide * this.sectorsPerSide);
     this.sectorPopulation = new Float64Array(this.sectorsPerSide * this.sectorsPerSide);
   }
@@ -105,6 +112,25 @@ export class CityState {
 
   setLevel(x: number, y: number, level: number): void {
     this.buildingLevel[y * this.size + x] = level;
+    this.markChanged(x, y);
+  }
+
+  getService(x: number, y: number): ServiceType {
+    return this.service[y * this.size + x] as ServiceType;
+  }
+
+  getServiceLevel(x: number, y: number): number {
+    return this.serviceLevel[y * this.size + x]!;
+  }
+
+  /** Pone (o quita, con ServiceType.None) un edificio de servicio. Borra la zona de la casilla. */
+  setService(x: number, y: number, type: ServiceType, level = 1): void {
+    const i = y * this.size + x;
+    this.service[i] = type;
+    this.serviceLevel[i] = type === ServiceType.None ? 0 : level;
+    this.zones[i] = Zone.None;
+    this.buildingLevel[i] = 0;
+    this.servicesVersion++;
     this.markChanged(x, y);
   }
 

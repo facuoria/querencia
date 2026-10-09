@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { CityState } from '../core/cityState';
 import { generateMap, startCenter } from '../core/mapGen';
-import { Road, Terrain, Zone } from '../core/types';
+import { Road, ServiceType, Terrain, Zone } from '../core/types';
 import { MAP } from '../data/config';
-import { applyZone, buildRoad, lPath, planRoad, planZone, rectArea } from './construction';
+import {
+  applyZone,
+  buildRoad,
+  buildService,
+  demolish,
+  lPath,
+  planDemolish,
+  planRoad,
+  planService,
+  planZone,
+  rectArea,
+} from './construction';
 import { GrowthSim } from './growth';
 
 /** Generador pseudoaleatorio fijo, para que las pruebas den siempre lo mismo. */
@@ -24,6 +35,17 @@ function flatCity(): CityState {
   return state;
 }
 
+/** Planta eléctrica y pozo de agua junto a la autopista, a la altura y. */
+function addUtilities(state: CityState, y: number): void {
+  for (const [dy, type] of [
+    [0, ServiceType.Power],
+    [1, ServiceType.Water],
+  ] as const) {
+    const p = { x: MAP.highwayX - 1, y: y + dy };
+    expect(buildService(state, planService(state, p, type), type)).toBeNull();
+  }
+}
+
 function run(sim: GrowthSim, days: number): void {
   for (let i = 0; i < days; i++) sim.dailyTick();
 }
@@ -37,6 +59,7 @@ describe('crecimiento de zonas', () => {
     expect(buildRoad(state, planRoad(state, lPath({ x: MAP.highwayX, y }, { x: MAP.highwayX + 12, y })))).toBeNull();
     const area = rectArea({ x: MAP.highwayX + 1, y: y + 1 }, { x: MAP.highwayX + 12, y: y + 2 });
     expect(applyZone(state, planZone(state, area, Zone.Residential), Zone.Residential)).toBeNull();
+    addUtilities(state, y);
 
     const sim = new GrowthSim(state, seeded(1));
     run(sim, 60);
@@ -52,6 +75,7 @@ describe('crecimiento de zonas', () => {
     buildRoad(state, planRoad(state, lPath({ x, y }, { x: x + 8, y })));
     const area = rectArea({ x, y: y + 1 }, { x: x + 8, y: y + 2 });
     applyZone(state, planZone(state, area, Zone.Residential), Zone.Residential);
+    addUtilities(state, y);
 
     const sim = new GrowthSim(state, seeded(2));
     run(sim, 60);
@@ -74,6 +98,7 @@ describe('crecimiento de zonas', () => {
       const area = rectArea({ x: MAP.highwayX + 1, y: y + 1 }, { x: MAP.highwayX + 14, y: y + 3 });
       applyZone(state, planZone(state, area, zone), zone);
     });
+    addUtilities(state, y0 + 2);
 
     const sim = new GrowthSim(state, seeded(3));
     run(sim, 120);
@@ -82,5 +107,72 @@ describe('crecimiento de zonas', () => {
     expect(early).toBeGreaterThan(0);
     expect(state.stats.population).toBeGreaterThan(early);
     expect(state.stats.commercialJobs + state.stats.industrialJobs).toBeGreaterThan(0);
+  });
+});
+
+describe('servicios', () => {
+  it('sin luz ni agua no se construye nada', () => {
+    const state = flatCity();
+    const y = Math.floor(startCenter(state).y);
+    buildRoad(state, planRoad(state, lPath({ x: MAP.highwayX, y }, { x: MAP.highwayX + 12, y })));
+    const area = rectArea({ x: MAP.highwayX + 1, y: y + 1 }, { x: MAP.highwayX + 12, y: y + 2 });
+    applyZone(state, planZone(state, area, Zone.Residential), Zone.Residential);
+    const sim = new GrowthSim(state, seeded(4));
+    run(sim, 60);
+    expect(state.stats.population).toBe(0);
+  });
+
+  it('construir o quitar una planta cambia la cobertura', () => {
+    const state = flatCity();
+    const y = Math.floor(startCenter(state).y);
+    const sim = new GrowthSim(state, seeded(5));
+    const p = { x: MAP.highwayX + 1, y };
+    const far = state.index(p.x + 8, p.y);
+    sim.refresh();
+    expect(sim.services.coverage[ServiceType.Power]![far]).toBe(0);
+
+    buildService(state, planService(state, p, ServiceType.Power), ServiceType.Power);
+    sim.refresh();
+    expect(sim.services.coverage[ServiceType.Power]![far]).toBe(1);
+    expect(sim.services.utilities[ServiceType.Power]!.capacity).toBeGreaterThan(0);
+
+    demolish(state, planDemolish(state, [p]));
+    sim.refresh();
+    expect(sim.services.coverage[ServiceType.Power]![far]).toBe(0);
+    expect(sim.services.utilities[ServiceType.Power]!.capacity).toBe(0);
+  });
+
+  it('un servicio sin calle cerca no funciona', () => {
+    const state = flatCity();
+    const y = Math.floor(startCenter(state).y);
+    const p = { x: MAP.highwayX + 10, y };
+    buildService(state, planService(state, p, ServiceType.Hospital), ServiceType.Hospital);
+    const sim = new GrowthSim(state, seeded(6));
+    sim.refresh();
+    expect(sim.services.isWorking(p.x, p.y)).toBe(false);
+    expect(sim.services.coverage[ServiceType.Hospital]![state.index(p.x, p.y)]).toBe(0);
+  });
+
+  it('si el consumo supera la capacidad hay déficit y parte de la ciudad queda sin luz', () => {
+    const state = flatCity();
+    const y = Math.floor(startCenter(state).y);
+    addUtilities(state, y);
+    // Edificios ya construidos que piden más luz de la que da una planta.
+    for (let yy = y - 8; yy <= y + 8; yy++) {
+      for (let x = MAP.highwayX + 1; x <= MAP.highwayX + 12; x++) {
+        if (state.getService(x, yy) !== ServiceType.None) continue;
+        state.setZone(x, yy, Zone.Industrial);
+        state.setLevel(x, yy, 3);
+      }
+    }
+    const sim = new GrowthSim(state, seeded(7));
+    sim.refresh();
+    const power = sim.services.utilities[ServiceType.Power]!;
+    expect(power.consumption).toBeGreaterThan(power.capacity);
+    let unsupplied = 0;
+    for (let i = 0; i < state.buildingLevel.length; i++) {
+      if (state.buildingLevel[i]! > 0 && sim.services.supplied[ServiceType.Power]![i] !== 1) unsupplied++;
+    }
+    expect(unsupplied).toBeGreaterThan(0);
   });
 });
