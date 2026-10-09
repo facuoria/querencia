@@ -54,8 +54,8 @@ export const COSTS = {
   road: 10,
   /** Extra por talar un bosque al construir encima. */
   clearForest: 5,
-  /** Por casilla demolida (calle o bosque). */
-  demolish: 2,
+  /** Parte del costo de construcción que se devuelve al demoler. Talar bosque es gratis. */
+  demolishRefund: 0.5,
 } as const;
 
 export const TIME = {

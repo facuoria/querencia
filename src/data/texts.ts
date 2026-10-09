@@ -25,6 +25,7 @@ export const TEXTS = {
     select: 'Seleccionar',
     road: 'Carretera',
     demolish: 'Demoler',
+    demolishRefund: 'devuelve 50%',
   },
   time: {
     pause: 'Pausa',

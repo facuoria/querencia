@@ -85,8 +85,10 @@ export function rectArea(a: TileCoord, b: TileCoord): TileCoord[] {
   return out;
 }
 
+/** Lo que se devuelve al demoler: una parte de lo que costó construir. El costo del plan queda negativo. */
 export function planDemolish(state: CityState, area: TileCoord[]): Plan {
   let cost = 0;
+  let count = 0;
   let touchesHighway = false;
   const tiles: PlannedTile[] = [];
   for (const p of area) {
@@ -103,13 +105,13 @@ export function planDemolish(state: CityState, area: TileCoord[]): Plan {
       tiles.push({ ...p, status: TileStatus.Invalid });
       continue;
     }
-    cost += COSTS.demolish;
+    if (road === Road.Street) cost -= COSTS.road * COSTS.demolishRefund;
+    count++;
     tiles.push({ ...p, status: TileStatus.Ok });
   }
   let error: string | null = null;
-  if (cost === 0) error = touchesHighway ? TEXTS.errors.highway : TEXTS.errors.nothing;
-  else if (cost > state.money) error = TEXTS.errors.noMoney;
-  return { tiles, cost, error };
+  if (count === 0) error = touchesHighway ? TEXTS.errors.highway : TEXTS.errors.nothing;
+  return { tiles, cost: Math.floor(cost), error };
 }
 
 export function demolish(state: CityState, plan: Plan): string | null {

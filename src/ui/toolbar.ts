@@ -3,10 +3,10 @@ import { TEXTS } from '../data/texts';
 import { Tool, type ToolController } from '../input/tools';
 import { formatMoney } from './topBar';
 
-const BUTTONS: Array<{ tool: Tool; label: string; key: string; cost?: number }> = [
+const BUTTONS: Array<{ tool: Tool; label: string; key: string; cost?: string }> = [
   { tool: Tool.Select, label: TEXTS.tools.select, key: 'Esc' },
-  { tool: Tool.Road, label: TEXTS.tools.road, key: 'R', cost: COSTS.road },
-  { tool: Tool.Demolish, label: TEXTS.tools.demolish, key: 'B', cost: COSTS.demolish },
+  { tool: Tool.Road, label: TEXTS.tools.road, key: 'R', cost: formatMoney(COSTS.road) },
+  { tool: Tool.Demolish, label: TEXTS.tools.demolish, key: 'B', cost: TEXTS.tools.demolishRefund },
 ];
 
 /** Barra de herramientas abajo al centro. */
@@ -22,7 +22,7 @@ export class Toolbar {
       const name = document.createElement('span');
       name.textContent = def.label;
       const meta = document.createElement('small');
-      meta.textContent = def.cost ? `${def.key} · ${formatMoney(def.cost)}` : def.key;
+      meta.textContent = def.cost ? `${def.key} · ${def.cost}` : def.key;
       b.append(name, meta);
       b.addEventListener('click', () => tools.setTool(def.tool));
       this.buttons.set(def.tool, b);

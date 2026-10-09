@@ -97,7 +97,7 @@ async function start(): Promise<void> {
     overlay.update(tile, tools.plan, tools.tool === Tool.Demolish);
 
     const plan = tools.plan;
-    const label = plan ? (plan.error ?? formatMoney(plan.cost)) : null;
+    const label = plan ? (plan.error ?? (plan.cost < 0 ? `+${formatMoney(-plan.cost)}` : formatMoney(plan.cost))) : null;
     cursorLabel.update(label, controls.pointer?.x ?? 0, controls.pointer?.y ?? 0, !!plan?.error);
 
     hud.update(tile, camera.zoom, ticker.FPS);
