@@ -10,6 +10,7 @@ import { UTILITIES } from '../sim/services';
 export class Alerts {
   private readonly el: HTMLDivElement;
   private last = '';
+  private lastCheck = 0;
 
   constructor(
     parent: HTMLElement,
@@ -22,6 +23,10 @@ export class Alerts {
   }
 
   update(): void {
+    // Contar incendios y apagones recorre todo el mapa: con dos veces por segundo alcanza.
+    const now = performance.now();
+    if (now - this.lastCheck < 500) return;
+    this.lastCheck = now;
     const st = this.state;
     const a = TEXTS.alerts;
     const list: string[] = [];

@@ -2,7 +2,12 @@ import type { GameClock } from '../sim/clock';
 import { Tool, type ToolController } from './tools';
 
 /** Atajos de teclado para herramientas y velocidad. */
-export function installShortcuts(tools: ToolController, clock: GameClock, onHelp: () => void): void {
+export function installShortcuts(
+  tools: ToolController,
+  clock: GameClock,
+  onHelp: () => void,
+  onMute: () => void,
+): void {
   window.addEventListener('keydown', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
     if (e.repeat) return;
@@ -36,6 +41,9 @@ export function installShortcuts(tools: ToolController, clock: GameClock, onHelp
         break;
       case 'KeyH':
         onHelp();
+        break;
+      case 'KeyM':
+        onMute();
         break;
       case 'KeyT':
         tools.setTool(Tool.Sector);

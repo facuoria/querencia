@@ -14,7 +14,7 @@ export function startCenter(state: CityState): { x: number; y: number } {
   };
 }
 
-export function generateMap(state: CityState, seed = MAP.seed): void {
+export function generateMap(state: CityState, seed: number = MAP.seed): void {
   const g = TERRAIN_GEN;
   const start = startCenter(state);
   for (let y = 0; y < state.size; y++) {

@@ -6,6 +6,7 @@ export const ATLASES = {
   roads: 'assets/kenney/roads/cityTiles_sheet.json',
   details: 'assets/kenney/roads/cityDetails_sheet.json',
   buildings: 'assets/kenney/buildings/buildingTiles_sheet.json',
+  vehicles: 'assets/kenney/vehicles/sheet_allCars.json',
 } as const;
 
 export const SPRITE_ORIGIN = {
@@ -145,3 +146,11 @@ export const SERVICE_SPRITES: Record<number, ServiceSprite> = {
 /** Parque: plaza con pasto y árboles (más árboles en cada nivel). */
 export const PARK_SPRITE = 'cityTiles_059.png';
 export const PARK_TREES_BY_LEVEL = [3, 5, 7] as const;
+
+/** Autos civiles: modelo + número de cuadro según hacia dónde van (ver Isometric Vehicles). */
+export const CAR_MODELS = ['Black', 'Blue', 'Green', 'Red', 'Silver'].flatMap((color) =>
+  [1, 2, 3, 4, 5, 6].map((n) => `car${color}${n}`),
+);
+
+/** Cuadro de cada dirección. +x va abajo a la derecha (SE), +y abajo a la izquierda (SW). */
+export const CAR_FRAMES = { NE: '003', NW: '001', SE: '014', SW: '010' } as const;

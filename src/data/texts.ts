@@ -103,6 +103,24 @@ export const TEXTS = {
     destroyed: 'Un edificio se quemó',
   },
   helpButton: 'Ayuda (H)',
+  sound: {
+    on: 'Sonido activado (M para silenciar)',
+    off: 'Sonido silenciado (M para activar)',
+  },
+  start: {
+    title: 'Ciudad',
+    subtitle: 'Construí y hacé crecer tu ciudad, de aldea a metrópolis.',
+    continue: 'Continuar partida',
+    newGame: 'Nueva partida',
+    savedOn: 'Guardada el',
+    tips: [
+      'Trazá calles conectadas a la autopista: es la conexión con el exterior.',
+      'Zonificá residencial, comercial e industrial junto a esas calles.',
+      'Sin luz y agua no se construye nada: ubicá una planta eléctrica y un pozo.',
+      'Cuidá el ánimo: servicios, impuestos bajos, empleo, parques y seguridad.',
+      'Con más población se desbloquean edificios y podés comprar terreno.',
+    ],
+  },
   save: {
     save: 'Guardar',
     saved: 'Partida guardada',

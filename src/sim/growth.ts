@@ -49,13 +49,17 @@ export class GrowthSim {
   }
 
   /** Recalcula conexiones y totales sin avanzar el tiempo (por ejemplo, después de construir). */
-  refresh(): void {
+  /**
+   * Recalcula conexiones, servicios, ánimo y totales sin avanzar el tiempo (por ejemplo, después de construir).
+   * El valor del suelo es lo más costoso: solo se recalcula con full, y si no, en el próximo ciclo diario.
+   */
+  refresh(full = false): void {
     this.network.update();
     this.services.cuts = servicesCut(this.state);
     this.services.update();
     this.updateStats();
     this.happiness.update();
-    computeLandValue(this.state, this.landValue, this.services.landBonus, this.state.happiness);
+    if (full) computeLandValue(this.state, this.landValue, this.services.landBonus, this.state.happiness);
     this.updateStats();
   }
 

@@ -20,6 +20,8 @@ interface SaveData {
   sectorsBought: number;
   maxPopulation: number;
   announcedMilestone: number;
+  /** Población al guardar (solo para mostrarla en la pantalla de inicio). */
+  population?: number;
 }
 
 function toBase64(bytes: Uint8Array): string {
@@ -53,6 +55,7 @@ export function serialize(state: CityState): string {
     sectorsBought: state.sectorsBought,
     maxPopulation: state.maxPopulation,
     announcedMilestone: state.announcedMilestone,
+    population: state.stats.population,
   };
   return JSON.stringify(data);
 }
@@ -103,5 +106,18 @@ export function deleteSave(): void {
     localStorage.removeItem(SAVE.key);
   } catch {
     // Sin acceso al almacenamiento: no hay nada que borrar.
+  }
+}
+
+/** Datos básicos de la partida guardada, para la pantalla de inicio. */
+export function saveSummary(): { savedAt: string; population: number } | null {
+  try {
+    const text = localStorage.getItem(SAVE.key);
+    if (!text) return null;
+    const data = JSON.parse(text) as SaveData;
+    if (data.version !== FORMAT_VERSION) return null;
+    return { savedAt: data.savedAt, population: data.population ?? data.maxPopulation };
+  } catch {
+    return null;
   }
 }

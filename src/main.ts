@@ -2,7 +2,7 @@ import { Application, Container } from 'pixi.js';
 import { CityState } from './core/cityState';
 import { generateMap, startCenter } from './core/mapGen';
 import { Zone, type TileCoord } from './core/types';
-import { COLORS, MILESTONES, SAVE } from './data/config';
+import { COLORS, MILESTONES, SAVE, SOUND, TIME, TRAFFIC } from './data/config';
 import { SERVICES } from './data/services';
 import { TEXTS } from './data/texts';
 import { CameraControls } from './input/cameraControls';
@@ -14,7 +14,8 @@ import { Heatmap } from './render/heatmap';
 import { tileToWorld, worldToTile } from './render/iso';
 import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
-import { deleteSave, loadGame, saveGame } from './save/save';
+import { Traffic } from './render/traffic';
+import { deleteSave, loadGame, saveGame, saveSummary } from './save/save';
 import { GameClock } from './sim/clock';
 import { GrowthSim } from './sim/growth';
 import { currentMilestone, unlocksOf } from './sim/milestones';
@@ -23,6 +24,8 @@ import { BudgetPanel } from './ui/budgetPanel';
 import { DemandPanel } from './ui/demandPanel';
 import { Hud } from './ui/hud';
 import { MapsPanel, ServiceBar, ServiceInfo } from './ui/servicePanels';
+import { Sound } from './ui/sound';
+import { showStartScreen } from './ui/startScreen';
 import { CursorLabel, Toast } from './ui/toast';
 import { Toolbar } from './ui/toolbar';
 import { TopBar, formatMoney } from './ui/topBar';
@@ -52,12 +55,15 @@ function milestoneMessage(m: number): string {
   return m === MILESTONES.length - 1 ? `${text} ${t.finalAchievement}` : text;
 }
 
-/** Partida guardada, o una nueva si no hay. */
-function loadOrCreate(): { state: CityState; loaded: boolean } {
-  const saved = loadGame();
-  if (saved) return { state: saved, loaded: true };
+/** La partida guardada si se eligió continuar; si no, una nueva con un mapa distinto cada vez. */
+function loadOrCreate(continueSaved: boolean): { state: CityState; loaded: boolean } {
+  if (continueSaved) {
+    const saved = loadGame();
+    if (saved) return { state: saved, loaded: true };
+  }
+  deleteSave();
   const state = new CityState();
-  generateMap(state);
+  generateMap(state, Math.floor(Math.random() * 1e9));
   return { state, loaded: false };
 }
 
@@ -72,12 +78,16 @@ async function start(): Promise<void> {
     resolution: window.devicePixelRatio || 1,
   });
   host.appendChild(app.canvas);
-  await loadAssets();
+  // Los sprites se cargan mientras el jugador mira la pantalla de inicio.
+  const assets = loadAssets();
+  const choice = await showStartScreen(saveSummary());
+  await assets;
 
-  const { state, loaded } = loadOrCreate();
+  const { state, loaded } = loadOrCreate(choice === 'continue');
+  const sound = new Sound();
   const clock = new GameClock(state);
   const growth = new GrowthSim(state);
-  growth.refresh();
+  growth.refresh(true);
   // Solo en desarrollo: acceso desde la consola del navegador para probar.
   if (import.meta.env.DEV) Object.assign(window, { city: { state, growth } });
 
@@ -92,6 +102,7 @@ async function start(): Promise<void> {
   );
   const heatmap = new Heatmap(state, growth);
   const overlay = new Overlay(state);
+  const traffic = new Traffic(state, growth.network, (x, y) => mapRenderer.bandOf(x, y));
   world.addChild(mapRenderer.layer, heatmap.graphics, mapRenderer.gridLayer, mapRenderer.borderLayer, overlay.graphics);
   app.stage.addChild(world);
 
@@ -114,6 +125,10 @@ async function start(): Promise<void> {
   uiRoot.id = 'ui';
   document.body.appendChild(uiRoot);
   const toast = new Toast(uiRoot);
+  const showError = (msg: string): void => {
+    toast.show(msg);
+    sound.play('error');
+  };
 
   const save = (announce: boolean): void => {
     const ok = saveGame(state);
@@ -146,6 +161,7 @@ async function start(): Promise<void> {
     () => save(true),
     newGame,
     () => hud.toggleHelp(),
+    sound,
   );
   const alerts = new Alerts(uiRoot, state, growth);
   const cursorLabel = new CursorLabel(uiRoot);
@@ -154,17 +170,24 @@ async function start(): Promise<void> {
   const tools = new ToolController(
     app.canvas,
     state,
-    (msg) => toast.show(msg),
-    () => {
+    showError,
+    (tool) => {
       growth.refresh();
       heatmap.redraw();
+      const zoneTool = tool === Tool.Residential || tool === Tool.Commercial || tool === Tool.Industrial;
+      sound.play(tool === Tool.Demolish ? 'demolish' : zoneTool ? 'zone' : 'build');
     },
   );
   const toolbar = new Toolbar(uiRoot, tools, state);
   const serviceBar = new ServiceBar(uiRoot, tools, state);
   const mapsPanel = new MapsPanel(uiRoot, growth, heatmap);
-  const serviceInfo = new ServiceInfo(uiRoot, state, growth, tools, heatmap, (msg) => toast.show(msg));
-  installShortcuts(tools, clock, () => hud.toggleHelp());
+  const serviceInfo = new ServiceInfo(uiRoot, state, growth, tools, heatmap, showError);
+  installShortcuts(
+    tools,
+    clock,
+    () => hud.toggleHelp(),
+    () => sound.toggleMute(),
+  );
 
   if (loaded) toast.show(TEXTS.save.loaded, 'info');
   // En una partida nueva no se anuncia el primer hito; en una cargada, solo los que falten.
@@ -185,9 +208,12 @@ async function start(): Promise<void> {
       if (m > state.announcedMilestone) {
         state.announcedMilestone = m;
         toast.show(milestoneMessage(m), 'info', 7000);
+        sound.play('milestone');
       } else if (newFires > 0) {
         toast.show(`🔥 ${TEXTS.fire.started}`);
+        sound.play('fire');
       }
+      sound.setAmbient(state.stats.population / SOUND.ambientFullPopulation);
     }
     controls.update(dt);
     camera.apply();
@@ -201,6 +227,7 @@ async function start(): Promise<void> {
     }
     tools.setHover(tile);
     mapRenderer.sync();
+    traffic.update(dt, TIME.speeds[clock.speedIndex] ?? 0, camera.zoom >= TRAFFIC.minZoom);
     mapRenderer.gridVisible = tools.tool !== Tool.Select;
     const radius = tools.tool === Tool.Service ? growth.services.radiusOf(tools.serviceType, 1) : 0;
     const sector = tools.sector ? { ...tools.sector, size: state.sectorSize } : null;

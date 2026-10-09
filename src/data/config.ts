@@ -212,6 +212,34 @@ export const SECTORS = {
   costGrowth: 1.35,
 } as const;
 
+/** Autos y peatones decorativos. */
+export const TRAFFIC = {
+  /** Un auto cada tantos habitantes, con un tope. */
+  residentsPerCar: 20,
+  maxCars: 180,
+  /** Un peatón cada tantos habitantes, con un tope. */
+  residentsPerPedestrian: 25,
+  maxPedestrians: 140,
+  /** Casillas por segundo real a velocidad x1. */
+  carSpeed: 1.6,
+  pedestrianSpeed: 0.35,
+  /** Desplazamiento desde el centro de la calle, en casillas: carril y vereda. */
+  laneOffset: 0.17,
+  sidewalkOffset: 0.4,
+  carScale: 1.15,
+  /** Con el zoom más alejado que esto no se dibujan (no se distinguen y cuestan). */
+  minZoom: 0.3,
+  pedestrianColors: [0xe05a47, 0x3b7dd8, 0xf2c53d, 0x5fbf5f, 0xa66bd6, 0xf08c3a, 0x3a3a3a, 0xeeeeee],
+} as const;
+
+export const SOUND = {
+  volume: 0.35,
+  /** Volumen máximo del murmullo de fondo. */
+  ambientVolume: 0.06,
+  /** Población con la que el murmullo llega al máximo. */
+  ambientFullPopulation: 20000,
+} as const;
+
 export const SAVE = {
   key: 'ciudad-partida',
   /** Cada cuántos milisegundos reales se guarda solo. */

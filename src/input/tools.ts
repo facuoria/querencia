@@ -54,7 +54,7 @@ export class ToolController {
     canvas: HTMLCanvasElement,
     private readonly state: CityState,
     private readonly onError: (message: string) => void,
-    private readonly onChange: () => void,
+    private readonly onChange: (tool: Tool) => void,
   ) {
     canvas.addEventListener('pointerdown', (e) => {
       if (e.button === 0) this.begin();
@@ -114,7 +114,7 @@ export class ToolController {
       if (!this.sector) return;
       const error = buySector(this.state, this.sector.sx, this.sector.sy);
       if (error) this.onError(error);
-      else this.onChange();
+      else this.onChange(this.tool);
       return;
     }
     if (!this.hover) return;
@@ -130,7 +130,7 @@ export class ToolController {
     if (!plan) return;
     const error = this.apply(plan);
     if (error) this.onError(error);
-    else this.onChange();
+    else this.onChange(this.tool);
   }
 
   private apply(plan: Plan): string | null {

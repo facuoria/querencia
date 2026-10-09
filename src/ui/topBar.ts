@@ -12,6 +12,7 @@ export class TopBar {
   private readonly money: HTMLSpanElement;
   private readonly date: HTMLSpanElement;
   private readonly speedButtons: HTMLButtonElement[] = [];
+  private readonly soundButton: HTMLButtonElement;
   private last = '';
 
   constructor(
@@ -22,6 +23,7 @@ export class TopBar {
     onSave: () => void,
     onNewGame: () => void,
     onHelp: () => void,
+    private readonly sound: { muted: boolean; toggleMute: () => void },
   ) {
     const bar = document.createElement('div');
     bar.className = 'hud-panel top-bar';
@@ -54,18 +56,22 @@ export class TopBar {
     help.textContent = '❔';
     help.title = TEXTS.helpButton;
     help.addEventListener('click', onHelp);
-    bar.append(this.money, budget, this.date, speeds, save, fresh, help);
+    this.soundButton = document.createElement('button');
+    this.soundButton.addEventListener('click', () => sound.toggleMute());
+    bar.append(this.money, budget, this.date, speeds, save, fresh, this.soundButton, help);
     parent.append(bar);
   }
 
   update(): void {
     const d = dateOf(this.state.day);
-    const key = `${Math.round(this.state.money)}|${this.state.day}|${this.clock.speedIndex}`;
+    const key = `${Math.round(this.state.money)}|${this.state.day}|${this.clock.speedIndex}|${this.sound.muted}`;
     if (key === this.last) return;
     this.last = key;
     this.money.textContent = formatMoney(this.state.money);
     this.money.classList.toggle('negative', this.state.money < 0);
     this.date.textContent = `${d.day} de ${TEXTS.time.months[d.month]}, ${TEXTS.time.year} ${d.year}`;
     this.speedButtons.forEach((b, i) => b.classList.toggle('active', i === this.clock.speedIndex));
+    this.soundButton.textContent = this.sound.muted ? '🔇' : '🔊';
+    this.soundButton.title = this.sound.muted ? TEXTS.sound.off : TEXTS.sound.on;
   }
 }

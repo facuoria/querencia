@@ -146,6 +146,11 @@ export class MapRenderer {
         : 0xffffff;
   }
 
+  /** Contenedor de la banda de profundidad de una casilla: ahí se agregan objetos que se mueven (autos, peatones). */
+  bandOf(x: number, y: number): Container {
+    return this.tiles[y * this.state.size + x]!.parent!;
+  }
+
   /** Muestra solo los tramos que se ven en pantalla. Devuelve cuántos quedaron visibles. */
   cull(view: ViewRect): number {
     let visible = 0;
