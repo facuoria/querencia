@@ -1,0 +1,60 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1b2430;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: #eef2f6;
+  user-select: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas {
+  display: block;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hud-panel {
+  position: absolute;
+  background: rgba(16, 22, 29, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hud-info {
+  top: 12px;
+  left: 12px;
+  min-width: 220px;
+  white-space: pre-line;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-info h1 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hud-help {
+  bottom: 12px;
+  left: 12px;
+  color: #b8c3cf;
+  font-size: 12px;
+}
