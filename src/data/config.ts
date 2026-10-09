@@ -232,6 +232,27 @@ export const TRAFFIC = {
   pedestrianColors: [0xe05a47, 0x3b7dd8, 0xf2c53d, 0x5fbf5f, 0xa66bd6, 0xf08c3a, 0x3a3a3a, 0xeeeeee],
 } as const;
 
+/** Indicadores sobre el mapa (incendios, servicios sin calle, íconos de servicios). */
+export const INDICATORS = {
+  /** Tamaño en pantalla, en píxeles, según el zoom (entre el mínimo y el máximo). */
+  baseSize: 26,
+  minSize: 18,
+  maxSize: 30,
+  /** Por debajo de este zoom no se muestra ninguno; los de información, desde infoMinZoom. */
+  minZoom: 0.15,
+  infoMinZoom: 0.8,
+  /** Los que caen en la misma celda de pantalla (tamaño x factor) se agrupan con un contador. */
+  clusterFactor: 1.6,
+  maxVisible: 60,
+  /** Altura sobre el centro de la casilla, en unidades del mundo. */
+  liftBuilding: 70,
+  /** Marca animada al ir a una alerta. */
+  pingMs: 2400,
+  pingColor: 0x2d5b87,
+  countFill: 0x1f2a37,
+  countText: 0xfbfaf6,
+} as const;
+
 export const SOUND = {
   volume: 0.35,
   /** Volumen máximo del murmullo de fondo. */

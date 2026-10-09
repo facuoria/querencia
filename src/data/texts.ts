@@ -198,6 +198,7 @@ export const TEXTS = {
     alerts: 'Alertas',
     goTo: 'Ir al lugar',
     openBudget: 'Abrir presupuesto',
+    moreAlerts: 'Alertas sin mostrar:',
   },
   supplyNames: {
     power: 'Electricidad',

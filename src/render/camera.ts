@@ -41,6 +41,13 @@ export class Camera {
     };
   }
 
+  worldToScreen(wx: number, wy: number): { x: number; y: number } {
+    return {
+      x: (wx - this.x) * this.zoom + this.screen.width / 2,
+      y: (wy - this.y) * this.zoom + this.screen.height / 2,
+    };
+  }
+
   panByScreen(dx: number, dy: number): void {
     this.x -= dx / this.zoom;
     this.y -= dy / this.zoom;

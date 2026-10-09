@@ -11,6 +11,7 @@ import { Tool, ToolController } from './input/tools';
 import { loadAssets } from './render/assets';
 import { Camera } from './render/camera';
 import { Heatmap } from './render/heatmap';
+import { Indicators } from './render/indicators';
 import { tileToWorld, worldToTile } from './render/iso';
 import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
@@ -106,7 +107,18 @@ async function start(): Promise<void> {
   const overlay = new Overlay(state);
   const traffic = new Traffic(state, growth.network, (x, y) => mapRenderer.bandOf(x, y));
   world.addChild(mapRenderer.layer, heatmap.graphics, mapRenderer.gridLayer, mapRenderer.borderLayer, overlay.graphics);
-  app.stage.addChild(world);
+  // Los indicadores van en coordenadas de pantalla, encima del mapa.
+  const indicators = new Indicators(state, (x, y) => growth.services.isWorking(x, y));
+  const css = getComputedStyle(document.documentElement);
+  const cssColor = (name: string): string => css.getPropertyValue(name).trim();
+  await indicators.load({
+    paper: cssColor('--paper-raised'),
+    ink: cssColor('--ink'),
+    accent: cssColor('--accent'),
+    bad: cssColor('--bad'),
+  });
+  indicators.refresh();
+  app.stage.addChild(world, indicators.layer);
 
   // La cámara puede moverse dentro del rombo que ocupa el mapa.
   const size = state.size;
@@ -166,7 +178,14 @@ async function start(): Promise<void> {
   );
   const cityPanel = new CityPanel(shell.right, state);
   const supplyPanel = new SupplyPanel(shell.right, growth);
-  const alerts = new Alerts(shell.center, state, growth);
+  const alerts = new Alerts(shell.center, state, growth, {
+    focus: (tile) => {
+      const w = tileToWorld(tile.x + 0.5, tile.y + 0.5);
+      camera.centerOn(w.x, w.y);
+      indicators.ping(tile.x, tile.y);
+    },
+    openBudget: () => budgetPanel.toggle(true),
+  });
   const cursorLabel = new CursorLabel(shell.root);
 
   const controls = new CameraControls(app.canvas, camera, recenter);
@@ -177,6 +196,7 @@ async function start(): Promise<void> {
     (tool) => {
       growth.refresh();
       heatmap.redraw();
+      indicators.refresh();
       const zoneTool = tool === Tool.Residential || tool === Tool.Commercial || tool === Tool.Industrial;
       sound.play(tool === Tool.Demolish ? 'demolish' : zoneTool ? 'zone' : 'build');
     },
@@ -190,6 +210,20 @@ async function start(): Promise<void> {
     () => hud.toggleHelp(),
     () => sound.toggleMute(),
   );
+
+  // Zonas de pantalla tapadas por paneles: ahí no se dibujan indicadores. Se miden dos veces por segundo.
+  let blocked: DOMRect[] = [];
+  let blockedAt = 0;
+  const blockedRects = (): DOMRect[] => {
+    const now = performance.now();
+    if (now - blockedAt > 500) {
+      blockedAt = now;
+      blocked = [...shell.root.querySelectorAll<HTMLElement>('.panel, .alert, .toast.visible')]
+        .filter((el) => el.offsetParent !== null)
+        .map((el) => el.getBoundingClientRect());
+    }
+    return blocked;
+  };
 
   if (loaded) toast.show(TEXTS.save.loaded, 'info');
   // En una partida nueva no se anuncia el primer hito; en una cargada, solo los que falten.
@@ -205,6 +239,7 @@ async function start(): Promise<void> {
     }
     if (days > 0) {
       mapRenderer.refreshPower();
+      indicators.refresh();
       if (heatmap.mode !== null) heatmap.redraw();
       const m = currentMilestone(state);
       if (m > state.announcedMilestone) {
@@ -234,6 +269,7 @@ async function start(): Promise<void> {
     const radius = tools.tool === Tool.Service ? growth.services.radiusOf(tools.serviceType, 1) : 0;
     const sector = tools.sector ? { ...tools.sector, size: state.sectorSize } : null;
     overlay.update(tile, tools.plan, tools.tool === Tool.Demolish, radius, sector);
+    indicators.update(camera, blockedRects());
 
     const plan = tools.plan;
     const label = plan ? (plan.error ?? (plan.cost < 0 ? `+${formatMoney(-plan.cost)}` : formatMoney(plan.cost))) : null;
