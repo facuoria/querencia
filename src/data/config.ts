@@ -47,6 +47,62 @@ export const CAMERA = {
 
 export const ECONOMY = {
   initialMoney: 20000,
+  /** Tasa de impuestos inicial y límites, en porcentaje. */
+  defaultTaxRate: 9,
+  minTaxRate: 0,
+  maxTaxRate: 20,
+  /** Lo que paga por mes cada habitante o empleo con una tasa del 100%. Con 9% se cobra el 9% de esto. */
+  taxBase: { residential: 10, commercial: 12, industrial: 10 },
+  /** Mantenimiento mensual por casilla de calle. */
+  roadUpkeep: 0.5,
+  /** El mantenimiento de un servicio se multiplica por esto según su nivel (índice = nivel - 1). */
+  upkeepByLevel: [1, 1.6, 2.4],
+  /** Meses seguidos en negativo antes de que los servicios rindan menos. */
+  monthsNegativeBeforeCuts: 3,
+  /** Con recortes, el radio de los servicios se multiplica por esto. */
+  cutsRadiusFactor: 0.6,
+} as const;
+
+export const HAPPINESS = {
+  /** Punto de partida antes de sumar y restar factores. */
+  base: 50,
+  // Servicios
+  noPower: -18,
+  noWater: -18,
+  hospital: 8,
+  school: 6,
+  university: 3,
+  // Impuestos y empleo
+  /** Puntos por cada punto de impuesto residencial por encima (resta) o por debajo (suma) de la tasa inicial. */
+  perTaxPoint: -2.5,
+  /** Puntos con 100% de desempleo (se escala con la proporción). */
+  unemployment: -40,
+  // Entorno
+  park: 10,
+  waterOrForest: 4,
+  /** Industria cerca: contaminación y ruido. */
+  industryNearby: -14,
+  industryRadius: 4,
+  /** Junto a la autopista: ruido y tráfico. */
+  highwayNoise: -5,
+  highwayNoiseDistance: 1,
+  // Seguridad
+  police: 8,
+  fire: 5,
+  /** Sin policía, en barrios de más de esta población, aumenta la delincuencia. */
+  crimePopulation: 300,
+  crime: -10,
+  // Efectos
+  /** Por debajo de este ánimo la gente se va: los edificios bajan de nivel. */
+  leaveBelow: 35,
+  /** Probabilidad diaria máxima de bajar de nivel por ánimo bajo (con ánimo 0). */
+  leaveChance: 0.04,
+  /** Cuánto suma a la demanda residencial el ánimo de la ciudad: (ánimo - 50) / 50 * esto. */
+  demandEffect: 0.35,
+  /** Cuánto suma al valor del suelo el ánimo de la casilla: (ánimo - 50) / 50 * esto. */
+  landValueEffect: 0.12,
+  /** Puntos de demanda comercial e industrial por cada punto de impuesto sobre la tasa inicial. */
+  businessTaxDemand: -0.05,
 } as const;
 
 export const COSTS = {

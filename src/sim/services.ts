@@ -1,5 +1,6 @@
 import type { CityState } from '../core/cityState';
 import { ServiceType, Zone } from '../core/types';
+import { ECONOMY } from '../data/config';
 import { CONSUMPTION, SERVICE_LIST, SERVICE_RULES, SERVICES } from '../data/services';
 import type { RoadNetwork } from './network';
 
@@ -39,6 +40,8 @@ export class ServiceSim {
   readonly utilities: Record<number, UtilityStatus> = {};
   /** Suma de servicios al valor del suelo, por casilla. */
   readonly landBonus: Float32Array;
+  /** Con recortes por saldo negativo, los servicios cubren menos. */
+  cuts = false;
   /** Distancia a la planta más cercana de cada tipo, para repartir primero a los de cerca. */
   private readonly plantDistance: Record<number, Float32Array> = {};
 
@@ -63,7 +66,8 @@ export class ServiceSim {
 
   radiusOf(type: ServiceType, level: number): number {
     if (type === ServiceType.None) return 0;
-    return SERVICES[type].radius[level - 1] ?? 0;
+    const r = SERVICES[type].radius[level - 1] ?? 0;
+    return this.cuts ? Math.round(r * ECONOMY.cutsRadiusFactor) : r;
   }
 
   /** Lo que queda libre de un suministro. */
@@ -125,7 +129,7 @@ export class ServiceSim {
       if (!this.isWorking(x, y)) continue;
       const def = SERVICES[type];
       const level = st.serviceLevel[i]!;
-      const r = def.radius[level - 1] ?? 0;
+      const r = this.radiusOf(type, level);
       const cov = this.coverage[type]!;
       const dist = def.utility ? this.plantDistance[type] : undefined;
       if (def.utility) this.utilities[type]!.capacity += def.capacity?.[level - 1] ?? 0;

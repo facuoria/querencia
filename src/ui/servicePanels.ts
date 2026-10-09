@@ -74,10 +74,18 @@ export class MapsPanel {
       [null, TEXTS.maps.none],
       ...SERVICE_LIST.map((d): [HeatmapMode, string] => [d.type, d.icon]),
       ['landValue', '💰'],
+      ['happiness', '🙂'],
     ];
     for (const [mode, label] of modes) {
       const b = el('button', undefined, label);
-      b.title = mode === null ? TEXTS.maps.none : mode === 'landValue' ? TEXTS.maps.landValue : SERVICES[mode as 1].name;
+      b.title =
+        mode === null
+          ? TEXTS.maps.none
+          : mode === 'landValue'
+            ? TEXTS.maps.landValue
+            : mode === 'happiness'
+              ? TEXTS.maps.happiness
+              : SERVICES[mode as 1].name;
       b.addEventListener('click', () => heatmap.setMode(mode));
       this.mapButtons.set(mode, b);
       grid.append(b);

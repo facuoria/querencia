@@ -13,6 +13,25 @@ export interface CityStats {
   commercialJobs: number;
   industrialJobs: number;
   demand: Demand;
+  /** Ánimo promedio de la ciudad (0 a 100), ponderado por habitantes. */
+  happiness: number;
+  /** Proporción de trabajadores sin empleo (0 a 1). */
+  unemployment: number;
+}
+
+/** Tasas de impuestos en porcentaje. */
+export interface TaxRates {
+  residential: number;
+  commercial: number;
+  industrial: number;
+}
+
+/** Resultado del último mes. */
+export interface MonthReport {
+  income: TaxRates;
+  roadUpkeep: number;
+  serviceUpkeep: number;
+  balance: number;
 }
 
 /** Estado único de la ciudad. La simulación y las herramientas lo modifican; el dibujo y la interfaz solo lo leen. */
@@ -31,6 +50,9 @@ export class CityState {
   readonly unlockedSectors: Uint8Array;
   /** Habitantes de cada sector (barrio). */
   readonly sectorPopulation: Float64Array;
+  /** Ánimo de cada casilla residencial (0 a 100) y promedio de cada barrio. */
+  readonly happiness: Float32Array;
+  readonly sectorHappiness: Float32Array;
   money: number = ECONOMY.initialMoney;
   /** Días de juego transcurridos desde el inicio. */
   day = 0;
@@ -43,7 +65,13 @@ export class CityState {
     commercialJobs: 0,
     industrialJobs: 0,
     demand: { residential: 0, commercial: 0, industrial: 0 },
+    happiness: 50,
+    unemployment: 0,
   };
+  taxRates: TaxRates;
+  lastMonth: MonthReport | null = null;
+  /** Meses seguidos que se cerraron con saldo negativo. */
+  monthsNegative = 0;
   /** Índices de casillas modificadas desde la última vez que el dibujo las leyó. */
   private readonly changed = new Set<number>();
 
@@ -60,6 +88,10 @@ export class CityState {
     this.serviceLevel = new Uint8Array(n);
     this.unlockedSectors = new Uint8Array(this.sectorsPerSide * this.sectorsPerSide);
     this.sectorPopulation = new Float64Array(this.sectorsPerSide * this.sectorsPerSide);
+    this.happiness = new Float32Array(n).fill(50);
+    this.sectorHappiness = new Float32Array(this.sectorsPerSide * this.sectorsPerSide).fill(50);
+    const t = ECONOMY.defaultTaxRate;
+    this.taxRates = { residential: t, commercial: t, industrial: t };
   }
 
   inBounds(x: number, y: number): boolean {

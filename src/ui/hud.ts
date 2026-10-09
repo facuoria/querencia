@@ -1,7 +1,8 @@
 import type { CityState } from '../core/cityState';
 import { Road, Terrain, Zone, type TileCoord } from '../core/types';
 import { TEXTS } from '../data/texts';
-import { capacityOf, type GrowthSim } from '../sim/growth';
+import { capacityOf } from '../sim/capacity';
+import type { GrowthSim } from '../sim/growth';
 
 const TERRAIN_NAMES: Record<Terrain, string> = {
   [Terrain.Grass]: TEXTS.terrain.grass,
@@ -67,12 +68,20 @@ export class Hud {
         }
         if (!this.growth.network.hasAccess(x, y)) lines.push(`⚠ ${z.noAccess}`);
         lines.push(`${z.landValue}: ${Math.round(this.growth.landValue[st.index(x, y)]! * 100)}%`);
+        if (zone === Zone.Residential) {
+          const p = this.growth.happiness.partsAt(x, y);
+          const hp = TEXTS.happinessParts;
+          const f = (v: number): string => (v > 0 ? `+${Math.round(v)}` : String(Math.round(v)));
+          lines.push(`${z.happiness}: ${Math.round(p.total)}`);
+          lines.push(`  ${hp.services} ${f(p.services)} · ${hp.economy} ${f(p.economy)}`);
+          lines.push(`  ${hp.environment} ${f(p.environment)} · ${hp.safety} ${f(p.safety)}`);
+        }
       } else lines.push(`${h.terrain}: ${TERRAIN_NAMES[st.getTerrain(x, y)]}`);
       const pop = Math.round(st.sectorPopulation[sector.y * st.sectorsPerSide + sector.x]!);
       lines.push(
         locked
           ? `${h.sector} ${sector.x}, ${sector.y} (${h.locked})`
-          : `${TEXTS.stats.neighborhood} ${sector.x}, ${sector.y}: ${pop.toLocaleString('es-AR')} ${z.residents}`,
+          : `${TEXTS.stats.neighborhood} ${sector.x}, ${sector.y}: ${pop.toLocaleString('es-AR')} ${z.residents} · ${TEXTS.stats.happiness} ${Math.round(st.sectorHappiness[sector.y * st.sectorsPerSide + sector.x]!)}`,
       );
     } else {
       lines.push(h.noTile);

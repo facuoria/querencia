@@ -14,6 +14,8 @@ import { MapRenderer } from './render/mapRenderer';
 import { Overlay } from './render/overlay';
 import { GameClock } from './sim/clock';
 import { GrowthSim } from './sim/growth';
+import { Alerts } from './ui/alerts';
+import { BudgetPanel } from './ui/budgetPanel';
 import { DemandPanel } from './ui/demandPanel';
 import { Hud } from './ui/hud';
 import { MapsPanel, ServiceBar, ServiceInfo } from './ui/servicePanels';
@@ -82,7 +84,9 @@ async function start(): Promise<void> {
   document.body.appendChild(uiRoot);
   const hud = new Hud(uiRoot, state, growth);
   const demandPanel = new DemandPanel(uiRoot, state);
-  const topBar = new TopBar(uiRoot, state, clock);
+  const budgetPanel = new BudgetPanel(uiRoot, state, () => growth.refresh());
+  const topBar = new TopBar(uiRoot, state, clock, () => budgetPanel.toggle());
+  const alerts = new Alerts(uiRoot, state, growth);
   const toast = new Toast(uiRoot);
   const cursorLabel = new CursorLabel(uiRoot);
 
@@ -134,6 +138,8 @@ async function start(): Promise<void> {
     serviceBar.update();
     mapsPanel.update();
     serviceInfo.update();
+    budgetPanel.update();
+    alerts.update();
   });
 }
 

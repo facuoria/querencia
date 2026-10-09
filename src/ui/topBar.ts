@@ -14,7 +14,12 @@ export class TopBar {
   private readonly speedButtons: HTMLButtonElement[] = [];
   private last = '';
 
-  constructor(parent: HTMLElement, private readonly state: CityState, private readonly clock: GameClock) {
+  constructor(
+    parent: HTMLElement,
+    private readonly state: CityState,
+    private readonly clock: GameClock,
+    onBudget: () => void,
+  ) {
     const bar = document.createElement('div');
     bar.className = 'hud-panel top-bar';
     this.money = document.createElement('span');
@@ -31,7 +36,10 @@ export class TopBar {
       this.speedButtons.push(b);
       speeds.append(b);
     });
-    bar.append(this.money, this.date, speeds);
+    const budget = document.createElement('button');
+    budget.textContent = `📊 ${TEXTS.budget.button}`;
+    budget.addEventListener('click', onBudget);
+    bar.append(this.money, budget, this.date, speeds);
     parent.append(bar);
   }
 

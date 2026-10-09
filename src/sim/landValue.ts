@@ -1,9 +1,9 @@
 import type { CityState } from '../core/cityState';
 import { Terrain, Zone } from '../core/types';
-import { LAND_VALUE } from '../data/config';
+import { HAPPINESS, LAND_VALUE } from '../data/config';
 
 /** Suma de una grilla en un cuadrado de radio r, con tabla de sumas acumuladas. */
-class BoxSum {
+export class BoxSum {
   private readonly sums: Float64Array;
 
   constructor(private readonly n: number, values: (i: number) => number) {
@@ -35,7 +35,12 @@ class BoxSum {
  * Valor del suelo de 0 a 1 por casilla. Sube cerca del agua, el bosque, los servicios y los buenos barrios;
  * baja cerca de la industria y las plantas.
  */
-export function computeLandValue(state: CityState, out: Float32Array, serviceBonus?: Float32Array): void {
+export function computeLandValue(
+  state: CityState,
+  out: Float32Array,
+  serviceBonus?: Float32Array,
+  happiness?: Float32Array,
+): void {
   const n = state.size;
   const lv = LAND_VALUE;
   const water = new BoxSum(n, (i) => (state.terrain[i] === Terrain.Water ? 1 : 0));
@@ -53,6 +58,9 @@ export function computeLandValue(state: CityState, out: Float32Array, serviceBon
       v += Math.min(1, forest.average(x, y, lv.forestRadius) * 3) * lv.forestBonus;
       v += Math.min(1, levels.average(x, y, lv.neighborhoodRadius) * 2) * lv.neighborhoodBonus;
       v += serviceBonus?.[i] ?? 0;
+      if (happiness && state.zones[i] === Zone.Residential) {
+        v += ((happiness[i]! - 50) / 50) * HAPPINESS.landValueEffect;
+      }
       if (state.zones[i] !== Zone.Industrial) {
         v -= Math.min(1, industry.average(x, y, lv.industryRadius) * 4) * lv.industryPenalty;
       }

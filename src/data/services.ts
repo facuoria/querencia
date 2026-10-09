@@ -20,12 +20,15 @@ export interface ServiceDef {
   landValueBonus: number;
   /** Plantas de luz, agua o gas. */
   utility: boolean;
+  /** Mantenimiento mensual en nivel 1. */
+  upkeep: number;
 }
 
 export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Power]: {
     type: ServiceType.Power,
     name: TEXTS.services.power,
+    upkeep: 120,
     icon: '⚡',
     cost: 3000,
     upgradeCost: [2000, 4000],
@@ -37,6 +40,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Water]: {
     type: ServiceType.Water,
     name: TEXTS.services.water,
+    upkeep: 60,
     icon: '💧',
     cost: 1500,
     upgradeCost: [1200, 2500],
@@ -48,6 +52,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Gas]: {
     type: ServiceType.Gas,
     name: TEXTS.services.gas,
+    upkeep: 150,
     icon: '🔥',
     cost: 4000,
     upgradeCost: [2500, 5000],
@@ -59,6 +64,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Hospital]: {
     type: ServiceType.Hospital,
     name: TEXTS.services.hospital,
+    upkeep: 250,
     icon: '🏥',
     cost: 5000,
     upgradeCost: [3500, 7000],
@@ -69,6 +75,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.School]: {
     type: ServiceType.School,
     name: TEXTS.services.school,
+    upkeep: 150,
     icon: '🏫',
     cost: 3000,
     upgradeCost: [2000, 4000],
@@ -79,6 +86,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.University]: {
     type: ServiceType.University,
     name: TEXTS.services.university,
+    upkeep: 400,
     icon: '🎓',
     cost: 8000,
     upgradeCost: [5000, 10000],
@@ -89,6 +97,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Park]: {
     type: ServiceType.Park,
     name: TEXTS.services.park,
+    upkeep: 15,
     icon: '🌳',
     cost: 400,
     upgradeCost: [300, 600],
@@ -99,6 +108,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Fire]: {
     type: ServiceType.Fire,
     name: TEXTS.services.fire,
+    upkeep: 150,
     icon: '🚒',
     cost: 3500,
     upgradeCost: [2500, 5000],
@@ -109,6 +119,7 @@ export const SERVICES: Record<Exclude<ServiceType, 0>, ServiceDef> = {
   [ServiceType.Police]: {
     type: ServiceType.Police,
     name: TEXTS.services.police,
+    upkeep: 150,
     icon: '🚓',
     cost: 3500,
     upgradeCost: [2500, 5000],
